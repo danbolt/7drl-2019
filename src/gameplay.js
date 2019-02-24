@@ -2,11 +2,12 @@ var Gameplay = function () {
   //
 };
 Gameplay.prototype.create = function() {
-  //
-};
-Gameplay.prototype.update = function() {
-	//
+  initalizeThreeScene(this);
 };
 Gameplay.prototype.shutdown = function() {
-  //
+  unloadThreeScene();
+};
+Gameplay.prototype.update = function() {
+	updateThreeScene(this);
+  renderThreeScene();
 };

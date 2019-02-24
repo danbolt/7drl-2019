@@ -30,15 +30,25 @@ Preload.prototype.preload = function() {
   this.game.load.spritesheet('test_sheet', 'asset/image/test.png', 32, 32);
 };
 Preload.prototype.create = function() {
+  this.game.scale.onSizeChange.add(function () {
+    var cv = this.game.canvas;
+    this.game.canvas = threeCanvas;
+    this.game.scale.reflowCanvas();
+    this.game.canvas = cv;
+  }, this);
+  initalizeThreeJS(this.game.renderer.gl);
+  initalizeThreeShaders();
+  this.game.scale.onSizeChange.dispatch();
+
   this.game.state.start('Gameplay');
 };
 
 
 
 var main = function () {
-	console.log('hello, agbic! 😊');
+	console.log('hello, rendering! 😊');
 
-	var game = new Phaser.Game(640, 480);
+	var game = new Phaser.Game(320, 240, Phaser.AUTO, undefined, undefined, true, false);
 	game.state.add('Preload', Preload, false);
   game.state.add('Gameplay', Gameplay, false);
 
