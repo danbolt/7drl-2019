@@ -8,9 +8,9 @@ var renderThreeScene = undefined;
 let threeCanvas = undefined;
 
 (function () {
-  const globalLightDirection = new THREE.Vector3(1.0, -1.0, 0.0, 0.0);
+  const globalLightDirection = new THREE.Vector3(1.0, -2.0, 0.0, 0.0);
   globalLightDirection.normalize();
-  const globalLightAmbiance = new THREE.Vector3(0.0, 0.2, 0.0, 0.0);
+  const globalLightAmbiance = new THREE.Vector3(0.1, 0.1, 0.1, 0.0);
 
   var scene = undefined;
   var camera = undefined;
@@ -42,7 +42,7 @@ let threeCanvas = undefined;
                       uniform vec3 lightDirection;
 
                       varying float noiseVal;
-                      varying vec3 diffuse;
+                      varying float diffuse;
 
                       // 3D noise function taken from:
                       // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
@@ -82,8 +82,7 @@ let threeCanvas = undefined;
                         gl_Position = projectionMatrix * modelViewPosition;
 
                         // diffuse calculation
-                        float diff = max(dot((lightDirection * -1.0), normal), 0.0);
-                        diffuse = diff * vec3(1.0, 1.0, 1.0);
+                        diffuse = max(dot((lightDirection * -1.0), normal), 0.0);
                       }
                     `,
       fragmentShader: `
@@ -91,11 +90,22 @@ let threeCanvas = undefined;
                         uniform vec4 lightAmbiance;
 
                         varying float noiseVal;
-                        varying vec3 diffuse;
+                        varying float diffuse;
 
                         void main() {
                           vec3 noiseColor = vec3(1.0, 0.0, noiseVal * (sin(time * 0.01) * 0.5 + 1.0));
-                          gl_FragColor = vec4(diffuse * noiseColor, 1.0) + lightAmbiance;
+
+                          float clampedDiffuse = diffuse;
+                          if (diffuse > 0.7) {
+                            clampedDiffuse = 1.0;
+                          } else if (diffuse > 0.45) {
+                            clampedDiffuse = 0.7;
+                          } else if (diffuse > 0.2) {
+                            clampedDiffuse = 0.3;
+                          } else {
+                            clampedDiffuse = 0.18;
+                          }
+                          gl_FragColor = vec4(clampedDiffuse * noiseColor, 1.0) + lightAmbiance;
                         }
                       `
     });
@@ -119,16 +129,19 @@ let threeCanvas = undefined;
       }
     }
 
-    camera.position.y = 10;
-    camera.position.z = 5;
+    camera.position.y = 7;
+    camera.position.z = 8;
     camera.lookAt(0, 0, 0);
 
 
   };
   updateThreeScene = function(gameplayState) {
     testMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
+    testMaterial.uniforms.lightDirection.value.x = Math.sin(gameplayState.game.time.now * 0.005) ;
+    testMaterial.uniforms.lightDirection.value.y = -2;
+    testMaterial.uniforms.lightDirection.value.z = 0.0;
+    testMaterial.uniforms.lightDirection.value.normalize();
     testMaterial.needsUpdate = true;
-
   };
 
   renderThreeScene = function () {
