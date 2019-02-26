@@ -8,6 +8,10 @@ var renderThreeScene = undefined;
 let threeCanvas = undefined;
 
 (function () {
+  const globalLightDirection = new THREE.Vector3(1.0, -1.0, 0.0, 0.0);
+  globalLightDirection.normalize();
+  const globalLightAmbiance = new THREE.Vector3(0.0, 0.2, 0.0, 0.0);
+
   var scene = undefined;
   var camera = undefined;
   var renderer = undefined;
@@ -29,12 +33,16 @@ let threeCanvas = undefined;
     testMaterial = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 1.0 },
-        resolution: { value: new THREE.Vector2() }
+        lightDirection: { value: globalLightDirection },
+        lightAmbiance: { value: globalLightAmbiance }
       },
 
       vertexShader: `
                       uniform float time;
-                      uniform vec2 resolution;
+                      uniform vec3 lightDirection;
+
+                      varying float noiseVal;
+                      varying vec3 diffuse;
 
                       // 3D noise function taken from:
                       // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
@@ -65,38 +73,49 @@ let threeCanvas = undefined;
 
                       void main() {
                         vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
-                        if (noise(modelViewPosition.xyz * 1.0) > 0.5) {
+
+                        // warp position
+                        noiseVal = noise(modelViewPosition.xyz * 1.0);
+                        if (noiseVal > 0.5) {
                           modelViewPosition = modelViewPosition + (vec4(((sin(time * 0.0125 + 2.0)) * noise(modelViewPosition.xyz) * 0.125), 0.0, ((sin(time * 0.0125 + 4.0)) * noise(modelViewPosition.xyz) * 0.125), 0.0));
                         }
-
                         gl_Position = projectionMatrix * modelViewPosition;
+
+                        // diffuse calculation
+                        float diff = max(dot((lightDirection * -1.0), normal), 0.0);
+                        diffuse = diff * vec3(1.0, 1.0, 1.0);
                       }
                     `,
       fragmentShader: `
                         uniform float time;
-                        uniform vec2 resolution;
+                        uniform vec4 lightAmbiance;
+
+                        varying float noiseVal;
+                        varying vec3 diffuse;
+
                         void main() {
-                          gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+                          vec3 noiseColor = vec3(1.0, 0.0, noiseVal * (sin(time * 0.01) * 0.5 + 1.0));
+                          gl_FragColor = vec4(diffuse * noiseColor, 1.0) + lightAmbiance;
                         }
                       `
     });
   }
 
   initalizeThreeScene = function(gameplayState) {
-    var boxGeom = new THREE.BoxBufferGeometry( 1, 1, 1, 7, 7, 7 );
+    var boxGeom = new THREE.SphereBufferGeometry( 0.8, 8, 8);
     var boxMesh = new THREE.Mesh( boxGeom, testMaterial );
     
 
-    const count = 5;
-    for (var i = 0; i < 5; i++) {
-      for (var j = 0; j < 5; j++) {
+    const count = 10;
+    for (var i = 0; i < count; i++) {
+      for (var j = 0; j < count; j++) {
         var box = boxMesh.clone();
-        box.position.x = (i * 3) - ((count * 3) / 2);
-        box.position.z = (j * 3) - ((count * 3) / 2);
+        box.position.x = (i * 2) - (count / 1.5);
+        box.position.z = (j * 2) - (count / 1.5);
         scene.add(box);
 
         var t = gameplayState.game.add.tween(box.position);
-        t.to( {x: [box.position.x + Math.random(), box.position.x + Math.random(), box.position.x, box.position.x], z: [box.position.z, box.position.z + Math.random(), box.position.z + Math.random(), box.position.z]}, 2000, Phaser.Easing.Linear.None, true, 0, -1);
+        t.to( {x: [box.position.x + Math.random() * 0.2, box.position.x + Math.random() * 0.2, box.position.x, box.position.x], z: [box.position.z, box.position.z + Math.random() * 0.2, box.position.z + Math.random() * 0.2, box.position.z]}, 2000, Phaser.Easing.Linear.None, true, 0, -1);
       }
     }
 
