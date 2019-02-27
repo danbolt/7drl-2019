@@ -1,11 +1,16 @@
 var initalizeThreeJS = undefined;
 var initalizeThreeShaders = undefined;
 var initalizeThreeScene = undefined;
+var loadThreeAssets = undefined;
 var updateThreeScene = undefined;
 var unloadThreeScene = undefined;
 var renderThreeScene = undefined;
 
 let threeCanvas = undefined;
+
+var threeModelsLoaded = false;
+var threeTexturesLoaded = false;
+var threeAllAssetsLoaded = false;
 
 (function () {
   const globalLightDirection = new THREE.Vector3(1.0, -2.0, 0.0, 0.0);
@@ -17,6 +22,20 @@ let threeCanvas = undefined;
   var renderer = undefined;
 
   var testMaterial = undefined;
+  var texturedPlayerMatieral = undefined;
+
+  var modelsToLoad = [
+    'player_test'
+  ];
+  var modelsMap = {};
+  var animationsMap = {};
+
+  var texturesToLoad = [
+    'player_tex'
+  ];
+  var texturesMap = {};
+
+  var playerAnimationMixer = undefined;
 
   initalizeThreeJS = function (phaserWebGLContext) {
     scene = new THREE.Scene();
@@ -27,6 +46,48 @@ let threeCanvas = undefined;
     document.body.appendChild( renderer.domElement );
     renderer.domElement.style["z-index"] = -1;
     threeCanvas = renderer.domElement;
+  };
+
+  loadThreeAssets = function() {
+    var modelsFinishedLoading = 0;
+    var ml = new THREE.GLTFLoader();
+    modelsToLoad.forEach(function (modelName) {
+      ml.load('asset/model/' + modelName + '.gltf', function (gltf) {
+        modelsMap[modelName] = gltf.scene;
+        animationsMap[modelName] = gltf.animations;
+        modelsFinishedLoading++;
+        if (modelsFinishedLoading === modelsToLoad.length) {
+          threeModelsLoaded = true;
+          console.log('done loading three three textures!');
+
+          if (threeTexturesLoaded && threeModelsLoaded) {
+            threeAllAssetsLoaded = true;
+            initalizeThreeShaders();
+            console.log('done loading all assets!');
+          }
+        }
+      });
+    }, this);
+
+    var texturesFinishedLoading = 0;
+    var tl = new THREE.TextureLoader();
+    texturesToLoad.forEach(function (textureName) {
+      tl.load('asset/model/' + textureName + '.png', function (loadedTexture) {
+        texturesMap[textureName] = loadedTexture;
+
+        texturesFinishedLoading++;
+        if (texturesFinishedLoading === texturesToLoad.length) {
+          threeTexturesLoaded = true;
+          console.log('done loading three images!');
+
+          if (threeTexturesLoaded && threeModelsLoaded) {
+            threeAllAssetsLoaded = true;
+            initalizeThreeShaders();
+            console.log('done loading all assets!');
+          }
+        }
+      });
+    }, this);
   };
 
   initalizeThreeShaders = function() {
@@ -109,12 +170,121 @@ let threeCanvas = undefined;
                         }
                       `
     });
+
+    texturedPlayerMatieral = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 1.0 },
+        lightDirection: { value: globalLightDirection },
+        lightAmbiance: { value: new THREE.Vector4(0.2, 0.2, 0.2, 0.0) },
+        playerTex: { value: texturesMap['player_tex'] }
+      },
+
+      vertexShader: `
+                      uniform float time;
+                      uniform vec3 lightDirection;
+
+                      varying float noiseVal;
+                      varying float diffuse;
+                      varying vec2 uVu;
+
+                      // 3D noise function taken from:
+                      // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+                      float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+                      vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+                      vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
+                      float noise(vec3 p){
+                          vec3 a = floor(p);
+                          vec3 d = p - a;
+                          d = d * d * (3.0 - 2.0 * d);
+
+                          vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+                          vec4 k1 = perm(b.xyxy);
+                          vec4 k2 = perm(k1.xyxy + b.zzww);
+
+                          vec4 c = k2 + a.zzzz;
+                          vec4 k3 = perm(c);
+                          vec4 k4 = perm(c + 1.0);
+
+                          vec4 o1 = fract(k3 * (1.0 / 41.0));
+                          vec4 o2 = fract(k4 * (1.0 / 41.0));
+
+                          vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+                          vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+
+                          return o4.y * d.y + o4.x * (1.0 - d.y);
+                      }
+
+                      void main() {
+                        vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+                        gl_Position = projectionMatrix * modelViewPosition;
+
+                        // diffuse calculation
+                        diffuse = max(dot((lightDirection * -1.0), normal) + 0.5, 0.0) / 1.5;
+
+                        uVu = uv;
+                      }
+                    `,
+      fragmentShader: `
+                        uniform float time;
+                        uniform vec4 lightAmbiance;
+                        uniform sampler2D playerTex;
+
+                        varying float noiseVal;
+                        varying float diffuse;
+                        varying vec2 uVu;
+
+                        void main() {
+                          vec3 noiseColor = vec3(1.0, 0.0, noiseVal * (sin(time * 0.01) * 0.5 + 1.0));
+                          vec4 texColor = texture2D(playerTex, uVu);
+
+                          float clampedDiffuse = diffuse;
+                          if (diffuse > 0.7) {
+                            clampedDiffuse = 1.0;
+                          } else if (diffuse > 0.45) {
+                            clampedDiffuse = 0.7;
+                          } else if (diffuse > 0.2) {
+                            clampedDiffuse = 0.3;
+                          } else {
+                            clampedDiffuse = 0.18;
+                          }
+                          gl_FragColor = (clampedDiffuse * texColor) + lightAmbiance;
+                        }
+                      `
+    });
   }
 
   initalizeThreeScene = function(gameplayState) {
     var boxGeom = new THREE.SphereBufferGeometry( 0.8, 8, 8);
     var boxMesh = new THREE.Mesh( boxGeom, testMaterial );
-    
+
+    var playerBones = [];
+    var playerMesh = modelsMap['player_test'];
+    playerMesh.children.forEach((child) => {
+      child.children.forEach((child2) => {
+        if (child2.name === 'Cube') {
+          child2.material = texturedPlayerMatieral;
+          child2.bind(child2.skeleton);
+          console.log(child2);
+        }
+      });
+    });
+    scene.add(playerMesh);
+    playerAnimationMixer = new THREE.AnimationMixer(playerMesh);
+    var idleClip = THREE.AnimationClip.findByName(animationsMap['player_test'], "Dash");
+    var idleAction = playerAnimationMixer.clipAction(idleClip);
+    idleAction.setLoop(THREE.LoopRepeat, 1000);
+    idleAction.clampWhenFinished = true;
+    idleAction.play();
+    //console.log(idleAction);
+
+    var helper = new THREE.SkeletonHelper( playerMesh );
+    helper.material.linewidth = 3;
+    scene.add( helper );
+
+    var tp = gameplayState.game.add.tween(playerMesh.rotation);
+    tp.loop();
+    tp.to({y: Math.PI * 2}, 3000);
+    tp.start();
 
     const count = 10;
     for (var i = 0; i < count; i++) {
@@ -129,7 +299,7 @@ let threeCanvas = undefined;
       }
     }
 
-    camera.position.y = 7;
+    camera.position.y = 5;
     camera.position.z = 8;
     camera.lookAt(0, 0, 0);
 
@@ -142,6 +312,8 @@ let threeCanvas = undefined;
     testMaterial.uniforms.lightDirection.value.z = 0.0;
     testMaterial.uniforms.lightDirection.value.normalize();
     testMaterial.needsUpdate = true;
+
+    playerAnimationMixer.update(gameplayState.game.time.elapsed / 1000)
   };
 
   renderThreeScene = function () {

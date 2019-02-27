@@ -37,13 +37,15 @@ Preload.prototype.create = function() {
     this.game.canvas = cv;
   }, this);
   initalizeThreeJS(this.game.renderer.gl);
-  initalizeThreeShaders();
+  loadThreeAssets();
   this.game.scale.onSizeChange.dispatch();
-
-  this.game.state.start('Gameplay');
 };
 
-
+Preload.prototype.update = function() {
+  if (threeAllAssetsLoaded === true) {
+    this.game.state.start('Gameplay');
+  }
+}
 
 var main = function () {
 	console.log('hello, rendering! 😊');
