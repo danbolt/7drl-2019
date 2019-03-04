@@ -142,8 +142,9 @@ var threeAllAssetsLoaded = false;
                         }
                         gl_Position = projectionMatrix * modelViewPosition;
 
+                        vec4 worldSpaceNormal = modelViewMatrix * vec4(normal, 0.0);
                         // diffuse calculation
-                        diffuse = max(dot((lightDirection * -1.0), normal), 0.0);
+                        diffuse = max(dot((lightDirection * -1.0), worldSpaceNormal.xyz), 0.0);
                       }
                     `,
       fragmentShader: `
@@ -218,8 +219,10 @@ var threeAllAssetsLoaded = false;
                         vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
                         gl_Position = projectionMatrix * modelViewPosition;
 
+                        vec4 worldSpaceNormal = vec4(normal, 0.0) * modelViewMatrix;
+
                         // diffuse calculation
-                        diffuse = max(dot((lightDirection * -1.0), normal) + 0.5, 0.0) / 1.5;
+                        diffuse = max(dot((lightDirection * -1.0), worldSpaceNormal.xyz) + 0.5, 0.0) / 1.5;
 
                         uVu = uv;
                       }
@@ -254,7 +257,7 @@ var threeAllAssetsLoaded = false;
   }
 
   initalizeThreeScene = function(gameplayState) {
-    var boxGeom = new THREE.SphereBufferGeometry( 0.8, 8, 8);
+    var boxGeom = new THREE.SphereBufferGeometry( 0.3, 8, 8);
     var boxMesh = new THREE.Mesh( boxGeom, testMaterial );
 
     var playerBones = [];
@@ -262,20 +265,26 @@ var threeAllAssetsLoaded = false;
     playerMesh.children.forEach((child) => {
       child.children.forEach((child2) => {
         if (child2.name === 'Cube') {
-          child2.material = texturedPlayerMatieral;
-          child2.bind(child2.skeleton);
-          console.log(child2);
+          //child2.material = texturedPlayerMatieral;
+          //child2.bind(child2.skeleton);
         }
       });
     });
     scene.add(playerMesh);
     playerAnimationMixer = new THREE.AnimationMixer(playerMesh);
-    var idleClip = THREE.AnimationClip.findByName(animationsMap['player_test'], "Dash");
+    var idleClip = THREE.AnimationClip.findByName(animationsMap['player_test'], "Idle");
     var idleAction = playerAnimationMixer.clipAction(idleClip);
     idleAction.setLoop(THREE.LoopRepeat, 1000);
     idleAction.clampWhenFinished = true;
     idleAction.play();
-    //console.log(idleAction);
+
+    var leftHandBone = playerMesh.getObjectByName('Armature001_Bone020');
+    var leftHand = new THREE.Mesh(boxGeom, testMaterial);
+    leftHandBone.add(leftHand);
+
+    var rightHandBone = playerMesh.getObjectByName('Armature001_Bone009');
+    var rightHand = new THREE.Mesh(boxGeom, testMaterial);
+    rightHandBone.add(rightHand);
 
     var helper = new THREE.SkeletonHelper( playerMesh );
     helper.material.linewidth = 3;
@@ -292,6 +301,7 @@ var threeAllAssetsLoaded = false;
         var box = boxMesh.clone();
         box.position.x = (i * 2) - (count / 1.5);
         box.position.z = (j * 2) - (count / 1.5);
+        box.position.y = -2;
         scene.add(box);
 
         var t = gameplayState.game.add.tween(box.position);
@@ -300,7 +310,7 @@ var threeAllAssetsLoaded = false;
     }
 
     camera.position.y = 5;
-    camera.position.z = 8;
+    camera.position.z = 5;
     camera.lookAt(0, 0, 0);
 
 
