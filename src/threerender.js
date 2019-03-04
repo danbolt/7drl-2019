@@ -13,7 +13,7 @@ var threeTexturesLoaded = false;
 var threeAllAssetsLoaded = false;
 
 (function () {
-  const globalLightDirection = new THREE.Vector3(1.0, -2.0, 0.0, 0.0);
+  const globalLightDirection = new THREE.Vector3(0.4, -2.0, 0.0, 0.0);
   globalLightDirection.normalize();
   const globalLightAmbiance = new THREE.Vector3(0.1, 0.1, 0.1, 0.0);
 
@@ -27,6 +27,7 @@ var threeAllAssetsLoaded = false;
   var needUpdateWalls = true;
 
   var testMaterial = undefined;
+  var playerMaterial = undefined;
 
   var modelsToLoad = [
     'player_test'
@@ -99,7 +100,8 @@ var threeAllAssetsLoaded = false;
       uniforms: {
         time: { value: 1.0 },
         lightDirection: { value: globalLightDirection },
-        lightAmbiance: { value: globalLightAmbiance }
+        lightAmbiance: { value: globalLightAmbiance },
+        ambianceColor: { value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) }
       },
 
       vertexShader: `
@@ -154,12 +156,13 @@ var threeAllAssetsLoaded = false;
       fragmentShader: `
                         uniform float time;
                         uniform vec4 lightAmbiance;
+                        uniform vec4 ambianceColor;
 
                         varying float noiseVal;
                         varying float diffuse;
 
                         void main() {
-                          vec3 noiseColor = vec3(1.0, 0.0, noiseVal * (sin(time * 0.01) * 0.5 + 1.0));
+                          vec3 noiseColor = ambianceColor.xyz * noiseVal;
 
                           float clampedDiffuse = diffuse;
                           if (diffuse > 0.7) {
@@ -175,13 +178,75 @@ var threeAllAssetsLoaded = false;
                         }
                       `
     });
+
+    playerMaterial = testMaterial.clone();
+    playerMaterial.uniforms.ambianceColor.value.set(0.0, 1.0, 1.0, 1.0);
+    playerMaterial.needsUpdate = true;
   }
 
+  var initializePlayerGeom = function() {
+    var boxGeom = new THREE.BoxBufferGeometry( 1.0, 1.0, 1.0, 3, 3, 3);
+    var boxMesh = new THREE.Mesh( boxGeom, playerMaterial );
+
+    var playerMesh = modelsMap['player_test'];
+
+    var torsoBone = playerMesh.getObjectByName('Armature001_Bone016');
+    var torso = new THREE.Mesh(boxGeom, playerMaterial);
+    torso.scale.x = 0.5;
+    torso.scale.z = 0.5;
+    torsoBone.add(torso);
+
+    var gutBone = playerMesh.getObjectByName('Armature001_Bone015');
+    var gut = new THREE.Mesh(boxGeom, playerMaterial);
+    gut.scale.y = 0.5;
+    gut.scale.z = 0.5;
+    gutBone.add(gut);
+
+    var leftFootBone = playerMesh.getObjectByName('Armature001_Bone029');
+    var leftFoot = new THREE.Mesh(boxGeom, playerMaterial);
+    leftFoot.scale.set(0.4, 0.4, 0.4);
+    leftFootBone.add(leftFoot);
+
+    var rightFootBone = playerMesh.getObjectByName('Armature001_Bone004');
+    var rightFoot = new THREE.Mesh(boxGeom, playerMaterial);
+    rightFoot.scale.set(0.4, 0.4, 0.4);
+    rightFootBone.add(rightFoot);
+
+    var leftHandBone = playerMesh.getObjectByName('Armature001_Bone020');
+    var leftHand = new THREE.Mesh(boxGeom, playerMaterial);
+    leftHand.scale.set(0.4, 0.4, 0.4);
+    leftHandBone.add(leftHand);
+
+    var rightHandBone = playerMesh.getObjectByName('Armature001_Bone009');
+    var rightHand = new THREE.Mesh(boxGeom, playerMaterial);
+    rightHand.scale.set(0.4, 0.4, 0.4);
+    rightHandBone.add(rightHand);
+
+    var leftShoulderBone = playerMesh.getObjectByName('Armature001_Bone018');
+    var leftShoulder = new THREE.Mesh(boxGeom, playerMaterial);
+    leftShoulder.scale.set(0.5, 0.4, 0.4);
+    leftShoulderBone.add(leftShoulder);
+
+    var rightShoulderBone = playerMesh.getObjectByName('Armature001_Bone007');
+    var rightShoulder = new THREE.Mesh(boxGeom, playerMaterial);
+    rightShoulder.scale.set(0.5, 0.4, 0.4);
+    rightShoulderBone.add(rightShoulder);
+
+    var headBone = playerMesh.getObjectByName('Armature001_Bone013');
+    var head = new THREE.Mesh(boxGeom, playerMaterial);
+    head.scale.set(0.7, 0.7, 0.7);
+    headBone.add(head);
+
+    var ponyTailBone = playerMesh.getObjectByName('Armature001_Bone014');
+    var ponyTail = new THREE.Mesh(boxGeom, playerMaterial);
+    ponyTail.scale.set(0.4, 1.0, 0.3);
+    ponyTailBone.add(ponyTail);
+
+  };
   initalizeThreeScene = function(gameplayState) {
     var boxGeom = new THREE.BoxBufferGeometry( 1.0, 1.0, 1.0, 3, 3, 3);
     var boxMesh = new THREE.Mesh( boxGeom, testMaterial );
 
-    var playerBones = [];
     var playerMesh = modelsMap['player_test'];
     scene.add(playerMesh);
     playerInWorld = playerMesh;
@@ -199,21 +264,15 @@ var threeAllAssetsLoaded = false;
     dashAction.clampWhenFinished = true;
     dashAction.timeScale = 2.0;
     playerAnimations["Dash"] = dashAction;
-    console.log(dashAction);
 
     playerAnimations["Idle"].play();
 
-    var leftHandBone = playerMesh.getObjectByName('Armature001_Bone020');
-    var leftHand = new THREE.Mesh(boxGeom, testMaterial);
-    leftHandBone.add(leftHand);
+    initializePlayerGeom();
 
-    var rightHandBone = playerMesh.getObjectByName('Armature001_Bone009');
-    var rightHand = new THREE.Mesh(boxGeom, testMaterial);
-    rightHandBone.add(rightHand);
-
-    var helper = new THREE.SkeletonHelper( playerMesh );
-    helper.material.linewidth = 3;
-    scene.add( helper );
+    // uncomment this for animation debugging
+    //var helper = new THREE.SkeletonHelper( playerMesh );
+    //helper.material.linewidth = 3;
+    //scene.add( helper );
 
     needUpdateWalls = true;
     const mapWidth = gameplayState.map.width;
@@ -230,11 +289,13 @@ var threeAllAssetsLoaded = false;
       }
     }
 
-    camera.position.y = 10;
+    camera.position.y = 8;
   };
   updateThreeScene = function(gameplayState) {
     testMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
     testMaterial.needsUpdate = true;
+    playerMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
+    playerMaterial.needsUpdate = true;
 
     if (gameplayState.player.data.moveDirection.getMagnitudeSq() > Epsilon) {
       playerAnimations["Idle"].stop();
