@@ -28,6 +28,7 @@ Preload.prototype.preload = function() {
 
   // Move these to load later
   this.game.load.spritesheet('test_sheet', 'asset/image/test.png', 32, 32);
+  this.game.load.image('test_sheet_sprite', 'asset/image/test.png');
 };
 Preload.prototype.create = function() {
   this.game.scale.onSizeChange.add(function () {
