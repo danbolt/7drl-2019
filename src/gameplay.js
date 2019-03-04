@@ -18,9 +18,9 @@ Gameplay.prototype.shutdown = function() {
   this.staminaBar = null;
 };
 
-
 Gameplay.prototype.create = function() {
-  this.player = new Player(this.game, 32, 32);
+  this.player = new Player(this.game, 0, 0);
+  this.player.renderable = false;
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
 

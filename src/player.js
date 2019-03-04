@@ -23,8 +23,6 @@ const PlayerBackstepTime = 50;
 const PlayerBackstepStaminaCost = 0.21;
 const PlayerStaminaReplenishRate = 0.00025;
 
-const Epsilon = 0.0001;
-
 var PlayerState = {
   NORMAL: 0,
   STRIKE: 1,

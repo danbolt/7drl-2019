@@ -21,6 +21,9 @@ var threeAllAssetsLoaded = false;
   var camera = undefined;
   var renderer = undefined;
 
+  var playerInWorld = undefined;
+  var playerAnimations = undefined;
+
   var testMaterial = undefined;
   var texturedPlayerMatieral = undefined;
 
@@ -263,12 +266,22 @@ var threeAllAssetsLoaded = false;
     var playerBones = [];
     var playerMesh = modelsMap['player_test'];
     scene.add(playerMesh);
+    playerInWorld = playerMesh;
+
+    playerAnimations = {};
     playerAnimationMixer = new THREE.AnimationMixer(playerMesh);
     var idleClip = THREE.AnimationClip.findByName(animationsMap['player_test'], "Idle");
     var idleAction = playerAnimationMixer.clipAction(idleClip);
     idleAction.setLoop(THREE.LoopRepeat, 1000);
     idleAction.clampWhenFinished = true;
-    idleAction.play();
+    playerAnimations["Idle"] = idleAction;
+    var dashClip = THREE.AnimationClip.findByName(animationsMap['player_test'], "Dash");
+    var dashAction = playerAnimationMixer.clipAction(dashClip);
+    dashAction.setLoop(THREE.LoopRepeat, 1000);
+    dashAction.clampWhenFinished = true;
+    playerAnimations["Dash"] = dashAction;
+
+    playerAnimations["Idle"].play();
 
     var leftHandBone = playerMesh.getObjectByName('Armature001_Bone020');
     var leftHand = new THREE.Mesh(boxGeom, testMaterial);
@@ -281,11 +294,6 @@ var threeAllAssetsLoaded = false;
     var helper = new THREE.SkeletonHelper( playerMesh );
     helper.material.linewidth = 3;
     scene.add( helper );
-
-    var tp = gameplayState.game.add.tween(playerMesh.rotation);
-    tp.loop();
-    tp.to({y: Math.PI * 2}, 3000);
-    tp.start();
 
     const count = 10;
     for (var i = 0; i < count; i++) {
@@ -301,11 +309,9 @@ var threeAllAssetsLoaded = false;
       }
     }
 
-    camera.position.y = 5;
+    camera.position.y = 10;
     camera.position.z = 5;
     camera.lookAt(0, 0, 0);
-
-
   };
   updateThreeScene = function(gameplayState) {
     testMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
@@ -315,7 +321,21 @@ var threeAllAssetsLoaded = false;
     testMaterial.uniforms.lightDirection.value.normalize();
     testMaterial.needsUpdate = true;
 
-    playerAnimationMixer.update(gameplayState.game.time.elapsed / 1000)
+    if (gameplayState.player.data.moveDirection.getMagnitudeSq() > Epsilon) {
+      playerAnimations["Idle"].stop();
+      playerAnimations["Dash"].play();
+    } else {
+      playerAnimations["Dash"].stop();
+      playerAnimations["Idle"].play();
+    }
+    playerAnimationMixer.update(gameplayState.game.time.elapsed / 1000);
+
+    playerInWorld.position.x = gameplayState.player.x;
+    playerInWorld.position.z = gameplayState.player.y;
+    playerInWorld.rotation.y = (gameplayState.player.rotation - (Math.PI * 0.5)) * -1;
+    camera.position.x = gameplayState.game.camera.x + (gameplayState.game.width * 0.5);
+    camera.position.z = gameplayState.game.camera.y + 5 + (gameplayState.game.height * 0.5);
+    camera.lookAt(playerInWorld.position.x, 0, playerInWorld.position.z);
   };
 
   renderThreeScene = function () {
