@@ -262,14 +262,6 @@ var threeAllAssetsLoaded = false;
 
     var playerBones = [];
     var playerMesh = modelsMap['player_test'];
-    playerMesh.children.forEach((child) => {
-      child.children.forEach((child2) => {
-        if (child2.name === 'Cube') {
-          //child2.material = texturedPlayerMatieral;
-          //child2.bind(child2.skeleton);
-        }
-      });
-    });
     scene.add(playerMesh);
     playerAnimationMixer = new THREE.AnimationMixer(playerMesh);
     var idleClip = THREE.AnimationClip.findByName(animationsMap['player_test'], "Idle");
