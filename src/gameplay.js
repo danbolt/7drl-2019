@@ -1,13 +1,18 @@
 const StaminaBarWidth = 96;
 const StaminaBarHeight = 16;
 
+// randomize me later
 const mapSize = 100;
 
 var Gameplay = function () {
   this.player = null;
 
+  this.enemies = null;
+
   this.map = null;
   this.foregroundLayer = null;
+
+  this.levelGenData = { enemies: [], items: [], exit: new Phaser.Point(-1, -1), spawn: new Phaser.Point(-1, -1) };
 
   this.ui = null;
   this.staminaBarBacking = null;
@@ -18,8 +23,12 @@ Gameplay.prototype.shutdown = function() {
 
   this.player = null;
 
+  this.enemies = null;
+
   this.map = null;
   this.foregroundLayer = null;
+
+  this.levelGenData = { enemies: [], items: [], exit: new Phaser.Point(-1, -1), spawn: new Phaser.Point(-1, -1) };
 
   this.ui = null;
   this.staminaBarBacking = null;
@@ -29,24 +38,37 @@ Gameplay.prototype.shutdown = function() {
 Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
 
+  // data drive this later
+  const TEST_SEED = 101;
+
+  var enemySpawnSkew = new Phaser.Matrix();
+
+  var posScratchPad = new Phaser.Point();
   var mapCsv = '';
-  noise.seed(101);
+  noise.seed(TEST_SEED);
   for (var x = 0; x < mapSize; x++) {
     for (var y = 0; y < mapSize; y++) {
-      if ((x === 0) || (y === 0) || (x === (mapSize-1)) || (y === (mapSize-1))) {
+      posScratchPad.x = x;
+      posScratchPad.y = y;
+
+      if ((posScratchPad.x === 0) || (posScratchPad.y === 0) || (posScratchPad.x === (mapSize-1)) || (posScratchPad.y === (mapSize-1))) {
         mapCsv += '2';
-      } else if ((~~(x / PillarSpacing) % 2 === 0) && (~~(y / PillarSpacing) % 2 === 0)) {
+      } else if ((~~(posScratchPad.x / PillarSpacing) % 2 === 0) && (~~(posScratchPad.y / PillarSpacing) % 2 === 0)) {
         mapCsv += '2';
       } else {
-        var valueAt = noise.simplex2(x / 10, y / 10);
+        var valueAt = noise.simplex2(posScratchPad.x / 10, posScratchPad.y / 10);
         if (valueAt > 0.1) {
           mapCsv += '17';
         } else {
           mapCsv += '-1';
         }
+
+        if (valueAt < -0.8) {
+          this.levelGenData.enemies.push({ x: posScratchPad.x, y: posScratchPad.y });
+        }
       }
         
-      if (y !== (mapSize - 1)) {
+      if (posScratchPad.y !== (mapSize - 1)) {
         mapCsv += ',';
       }
     }
@@ -60,6 +82,19 @@ Gameplay.prototype.create = function() {
   this.player.renderable = false;
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
+
+  this.enemies = this.game.add.group(undefined, 'enemies');
+  this.levelGenData.enemies.forEach(function (enemyData) {
+    var enemy = this.game.add.sprite(enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, 'test_sheet', 7);
+    enemy.renderable = false;
+    this.enemies.addChild(enemy);
+    enemy.update = function() {
+      this.data.mesh.position.set(this.x * WorldScale, 0, this.y * WorldScale);
+      this.body.velocity.y = 50;
+    }
+  }, this);
+  this.game.physics.enable(this.enemies);
+  console.log(this.enemies);
 
   this.map = this.game.add.tilemap('gen_map', 32, 32);
   this.map.addTilesetImage('test_sheet_sprite', 'test_sheet_sprite', 32, 32);
@@ -98,6 +133,7 @@ Gameplay.prototype.update = function() {
 
   this.updateUI();
 
+  this.game.physics.arcade.collide(this.enemies, this.foregroundLayer);
   this.game.physics.arcade.collide(this.player, this.foregroundLayer, undefined, function (player, tile) {
     if ((player.data.state === PlayerState.STRIKE) && (tile.index === 17)) {
       if (tile.properties.wallMesh) {

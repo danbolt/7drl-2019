@@ -29,6 +29,7 @@ var threeAllAssetsLoaded = false;
   var testMaterial = undefined;
   var playerMaterial = undefined;
   var wallMaterial = undefined;
+  var enemyMaterial = undefined;
 
   var modelsToLoad = [
     'player_test'
@@ -55,7 +56,6 @@ var threeAllAssetsLoaded = false;
 
     renderer = new THREE.WebGLRenderer();
     renderer.setClearColor(new THREE.Color(0.2, 0.2, 0.2), 1.0);
-    console.log(renderer);
     renderer.setSize(phaserWebGLContext.drawingBufferWidth, phaserWebGLContext.drawingBufferHeight );
     document.body.appendChild( renderer.domElement );
     renderer.domElement.style["z-index"] = -1;
@@ -207,6 +207,10 @@ var threeAllAssetsLoaded = false;
     wallMaterial = testMaterial.clone();
     wallMaterial.uniforms.ambianceColor.value.set(0.6, 0.6, 0.6, 1.0);
     wallMaterial.needsUpdate = true;
+
+    enemyMaterial = testMaterial.clone();
+    enemyMaterial.uniforms.ambianceColor.value.set(0.9, 0.8, 0.0, 1.0);
+    enemyMaterial.needsUpdate = true;
   }
 
   var initializePlayerGeom = function() {
@@ -288,12 +292,18 @@ var threeAllAssetsLoaded = false;
     var dashAction = playerAnimationMixer.clipAction(dashClip);
     dashAction.setLoop(THREE.LoopRepeat, 1000);
     dashAction.clampWhenFinished = true;
-    dashAction.timeScale = 2.0;
+    dashAction.timeScale = 2.1;
     playerAnimations["Dash"] = dashAction;
-
     playerAnimations["Idle"].play();
-
     initializePlayerGeom();
+
+    var testEnemyGeom = new THREE.SphereBufferGeometry(1, 5, 5);
+    gameplayState.enemies.forEach(function (enemy) {
+      var enemyMesh = new THREE.Mesh(testEnemyGeom, enemyMaterial);
+      enemyMesh.position.set(enemy.x * WorldScale, 0, enemy.y * WorldScale);
+      scene.add(enemyMesh);
+      enemy.data.mesh = enemyMesh;
+    }, this);
 
     // uncomment this for animation debugging
     //var helper = new THREE.SkeletonHelper( playerMesh );
@@ -336,6 +346,8 @@ var threeAllAssetsLoaded = false;
     playerMaterial.needsUpdate = true;
     wallMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
     wallMaterial.needsUpdate = true;
+    enemyMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
+    enemyMaterial.needsUpdate = true;
 
     if (gameplayState.player.data.moveDirection.getMagnitudeSq() > Epsilon) {
       playerAnimations["Idle"].stop();
@@ -346,7 +358,6 @@ var threeAllAssetsLoaded = false;
     }
     playerAnimationMixer.update(gameplayState.game.time.elapsed / 1000);
 
-    const WorldScale = ( 1 / GameplayTileSize )
     playerInWorld.position.x = (gameplayState.player.x - gameplayState.player.width * 0.5) * WorldScale;
     playerInWorld.position.y = 0;
     playerInWorld.position.z = (gameplayState.player.y - gameplayState.player.height * 0.5) * WorldScale;
