@@ -85,16 +85,10 @@ Gameplay.prototype.create = function() {
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
-    var enemy = this.game.add.sprite(enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, 'test_sheet', 7);
-    enemy.renderable = false;
+    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize);
     this.enemies.addChild(enemy);
-    enemy.update = function() {
-      this.data.mesh.position.set(this.x * WorldScale, 0, this.y * WorldScale);
-      this.body.velocity.y = 50;
-    }
   }, this);
   this.game.physics.enable(this.enemies);
-  console.log(this.enemies);
 
   this.map = this.game.add.tilemap('gen_map', 32, 32);
   this.map.addTilesetImage('test_sheet_sprite', 'test_sheet_sprite', 32, 32);
