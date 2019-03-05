@@ -85,7 +85,7 @@ Gameplay.prototype.create = function() {
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
-    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize);
+    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player);
     this.enemies.addChild(enemy);
   }, this);
   this.game.physics.enable(this.enemies);
