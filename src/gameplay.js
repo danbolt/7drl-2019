@@ -78,7 +78,7 @@ Gameplay.prototype.preload = function () {
   this.game.cache.addTilemap('gen_map', null, mapCsv, Phaser.Tilemap.CSV);
 }
 Gameplay.prototype.create = function() {
-  this.player = new Player(this.game, 300 - 64, 300);
+  this.player = new Player(this.game, 300 - 128, 300);
   this.player.renderable = false;
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;

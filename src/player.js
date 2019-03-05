@@ -46,6 +46,7 @@ var Player = function(game, x, y) {
   this.data.state = PlayerState.NORMAL;
   this.data.stamina = 1.0;
 
+  // keyboard input initalization
   const aButtonKey = Phaser.KeyCode.X;
   const bButtonKey = Phaser.KeyCode.C;
   const downKey = Phaser.KeyCode.DOWN;
@@ -71,6 +72,19 @@ var Player = function(game, x, y) {
   var upArrowKey = this.game.input.keyboard.addKey(upKey);
   upArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.y -= 1.0; }, this);
   upArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.y += 1.0; }, this); 
+
+  // gamepad input initalization
+  this.game.input.gamepad.onAxisCallback = ((gamepad) => {
+    this.data.inputInfo.inputDirection.x = gamepad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
+    this.data.inputInfo.inputDirection.y = gamepad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
+  });
+  this.game.input.gamepad.onDownCallback = ((buttonCode) => {
+    if (buttonCode === Phaser.Gamepad.XBOX360_A) {
+      this.data.inputInfo.aButtonCallback();
+    } else if (buttonCode === Phaser.Gamepad.XBOX360_B) {
+      this.data.inputInfo.bButtonCallback();
+    }
+  });
 
   this.data.mesh = null;
   this.events.onKilled.add(function () {
