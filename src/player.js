@@ -46,6 +46,14 @@ var Player = function(game, x, y) {
   this.data.state = PlayerState.NORMAL;
   this.data.stamina = 1.0;
 
+  this.data.mesh = null;
+  this.events.onKilled.add(function () {
+    if (this.data.mesh) {
+      this.data.mesh.matrixAutoUpdate = false;
+      this.data.mesh.visible = false;
+    }
+  }, this);
+
   this.game.physics.enable(this, Phaser.Physics.ARCADE);
   this.anchor.set(0.5, 0.5);
 

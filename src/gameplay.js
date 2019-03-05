@@ -78,7 +78,7 @@ Gameplay.prototype.preload = function () {
   this.game.cache.addTilemap('gen_map', null, mapCsv, Phaser.Tilemap.CSV);
 }
 Gameplay.prototype.create = function() {
-  this.player = new Player(this.game, 300, 300);
+  this.player = new Player(this.game, 300 - 64, 300);
   this.player.renderable = false;
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
@@ -127,6 +127,13 @@ Gameplay.prototype.update = function() {
 
   this.updateUI();
 
+  this.game.physics.arcade.overlap(this.player, this.enemies, function (player, enemy) {
+    if (player.data.state === PlayerState.STRIKE) {
+      enemy.kill();
+    } else {
+      player.kill();
+    }
+  }, undefined, this);
   this.game.physics.arcade.collide(this.enemies, this.foregroundLayer);
   this.game.physics.arcade.collide(this.player, this.foregroundLayer, undefined, function (player, tile) {
     if ((player.data.state === PlayerState.STRIKE) && (tile.index === 17)) {

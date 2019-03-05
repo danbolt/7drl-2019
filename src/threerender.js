@@ -280,6 +280,7 @@ var threeAllAssetsLoaded = false;
     scene.add(playerMesh);
     playerInWorld = playerMesh;
     playerMesh.scale.set(0.7, 0.7, 0.7);
+    gameplayState.player.data.mesh = playerMesh;
 
     playerAnimations = {};
     playerAnimationMixer = new THREE.AnimationMixer(playerMesh);
