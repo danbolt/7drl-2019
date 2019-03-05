@@ -46,6 +46,32 @@ var Player = function(game, x, y) {
   this.data.state = PlayerState.NORMAL;
   this.data.stamina = 1.0;
 
+  const aButtonKey = Phaser.KeyCode.X;
+  const bButtonKey = Phaser.KeyCode.C;
+  const downKey = Phaser.KeyCode.DOWN;
+  const upKey = Phaser.KeyCode.UP;
+  const leftKey = Phaser.KeyCode.LEFT;
+  const rightKey = Phaser.KeyCode.RIGHT;
+  this.data.inputInfo = {
+    inputDirection: new Phaser.Point(0, 0),
+    aButtonCallback: () => {},
+    bButtonCallback: () => {}
+  };
+  this.game.input.keyboard.addKey(aButtonKey).onDown.add( () => { this.data.inputInfo.aButtonCallback(); });
+  this.game.input.keyboard.addKey(bButtonKey).onDown.add( () => { this.data.inputInfo.bButtonCallback(); });
+  var rightArrowKey = this.game.input.keyboard.addKey(rightKey);
+  rightArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.x += 1.0; }, this);
+  rightArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.x -= 1.0; }, this); 
+  var leftArrowKey = this.game.input.keyboard.addKey(leftKey);
+  leftArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.x -= 1.0; }, this);
+  leftArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.x += 1.0; }, this); 
+  var downArrowKey = this.game.input.keyboard.addKey(downKey);
+  downArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.y += 1.0; }, this);
+  downArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.y -= 1.0; }, this); 
+  var upArrowKey = this.game.input.keyboard.addKey(upKey);
+  upArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.y -= 1.0; }, this);
+  upArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.y += 1.0; }, this); 
+
   this.data.mesh = null;
   this.events.onKilled.add(function () {
     if (this.data.mesh) {
@@ -104,11 +130,8 @@ var Player = function(game, x, y) {
 
     };
   };
-  var strikeCallback = generateStrikeStepCallback(PlayerStrikeStaminaCost, PlayerState.STRIKE, PlayerStrikeSpeed, PlayerStrikeTime, PlayerStrikeDecayTime, PlayerWindupSpeed, PlayerWindupTime);
-  var backstepCallback = generateStrikeStepCallback(PlayerBackstepStaminaCost, PlayerState.BACKSTEP, PlayerBackstepSpeed, PlayerBackstepTime, PlayerBackstepDecayTime);
-
-  this.game.input.keyboard.addKey(Phaser.KeyCode.X).onDown.add(strikeCallback);
-  this.game.input.keyboard.addKey(Phaser.KeyCode.C).onDown.add(backstepCallback);
+  this.data.inputInfo.aButtonCallback = generateStrikeStepCallback(PlayerStrikeStaminaCost, PlayerState.STRIKE, PlayerStrikeSpeed, PlayerStrikeTime, PlayerStrikeDecayTime, PlayerWindupSpeed, PlayerWindupTime);
+  this.data.inputInfo.bButtonCallback = generateStrikeStepCallback(PlayerBackstepStaminaCost, PlayerState.BACKSTEP, PlayerBackstepSpeed, PlayerBackstepTime, PlayerBackstepDecayTime);
 }
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
@@ -116,22 +139,9 @@ Player.prototype.updateDirectionFromInput = function() {
   this.data.prevMoveDirection.x = this.data.moveDirection.x;
   this.data.prevMoveDirection.y = this.data.moveDirection.y;
 
-  // keyboard
   if (this.data.state === PlayerState.NORMAL) {
-    if (this.game.input.keyboard.isDown(Phaser.KeyCode.RIGHT)) {
-      this.data.moveDirection.x = 1.0;
-    } else if (this.game.input.keyboard.isDown(Phaser.KeyCode.LEFT)) {
-      this.data.moveDirection.x = -1.0;
-    } else {
-      this.data.moveDirection.x = 0.0;
-    }
-    if (this.game.input.keyboard.isDown(Phaser.KeyCode.DOWN)) {
-      this.data.moveDirection.y = 1.0;
-    } else if (this.game.input.keyboard.isDown(Phaser.KeyCode.UP)) {
-      this.data.moveDirection.y = -1.0;
-    } else {
-      this.data.moveDirection.y = 0.0;
-    }
+    this.data.moveDirection.x = this.data.inputInfo.inputDirection.x;
+    this.data.moveDirection.y = this.data.inputInfo.inputDirection.y;
   }
 
   this.data.moveDirection.normalize();
