@@ -28,6 +28,7 @@ var threeAllAssetsLoaded = false;
 
   var testMaterial = undefined;
   var playerMaterial = undefined;
+  var wallMaterial = undefined;
 
   var modelsToLoad = [
     'player_test'
@@ -41,6 +42,12 @@ var threeAllAssetsLoaded = false;
   var texturesMap = {};
 
   var playerAnimationMixer = undefined;
+
+  // taken from:
+  // https://gist.github.com/Anthodpnt/f4ad9127a3c5479d1c0e8ff5ed79078e
+  var lerp = function (a, b, n) {
+    return (1 - n) * a + n * b;
+  }
 
   initalizeThreeJS = function (phaserWebGLContext) {
     scene = new THREE.Scene();
@@ -138,15 +145,27 @@ var threeAllAssetsLoaded = false;
                           return o4.y * d.y + o4.x * (1.0 - d.y);
                       }
 
+
+                      float ps1(float v) {
+                        float granularity = 0.05;
+                        if (mod(v, granularity) > (granularity * 0.5)) {
+                          return floor(v / granularity) * granularity;
+                        } else {
+                          return ceil(v / granularity) * granularity;
+                        }
+                        
+                      }
+
                       void main() {
                         vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
 
                         // warp position
-                        noiseVal = noise(modelViewPosition.xyz * 1.0);
+                        noiseVal = noise(modelViewPosition.xyz * ((0.5 * sin(time * 0.0002)) + 1.0));
                         if (noiseVal > 0.5) {
-                          modelViewPosition = modelViewPosition + (vec4(((sin(time * 0.0125 + 2.0)) * noise(modelViewPosition.xyz) * 0.125), 0.0, ((sin(time * 0.0125 + 4.0)) * noise(modelViewPosition.xyz) * 0.125), 0.0));
+                          modelViewPosition = modelViewPosition + (vec4(((sin(time * 0.012 + 2.0)) * noise(modelViewPosition.xyz) * 0.125), 0.0, ((sin(time * 0.012 + 4.0)) * noise(modelViewPosition.xyz) * 0.12), 0.0));
                         }
                         gl_Position = projectionMatrix * modelViewPosition;
+                        gl_Position = vec4(ps1(gl_Position.x), ps1(gl_Position.y), ps1(gl_Position.z), ps1(gl_Position.w));
 
                         vec4 worldSpaceNormal = modelViewMatrix * vec4(normal, 0.0);
                         // diffuse calculation
@@ -182,6 +201,10 @@ var threeAllAssetsLoaded = false;
     playerMaterial = testMaterial.clone();
     playerMaterial.uniforms.ambianceColor.value.set(0.0, 1.0, 1.0, 1.0);
     playerMaterial.needsUpdate = true;
+
+    wallMaterial = testMaterial.clone();
+    wallMaterial.uniforms.ambianceColor.value.set(0.6, 0.6, 0.6, 1.0);
+    wallMaterial.needsUpdate = true;
   }
 
   var initializePlayerGeom = function() {
@@ -250,6 +273,7 @@ var threeAllAssetsLoaded = false;
     var playerMesh = modelsMap['player_test'];
     scene.add(playerMesh);
     playerInWorld = playerMesh;
+    playerMesh.scale.set(0.7, 0.7, 0.7);
 
     playerAnimations = {};
     playerAnimationMixer = new THREE.AnimationMixer(playerMesh);
@@ -281,21 +305,35 @@ var threeAllAssetsLoaded = false;
       for (var y = 0; y < mapHeight; y++) {
         var tileAt = gameplayState.map.getTile(x, y, gameplayState.foregroundLayer);
         if ((tileAt != null) && (tileAt.index > 0)) {
-          var newWallBox = new THREE.Mesh(boxGeom, testMaterial);
-          newWallBox.position.set(x, 0, y);
-          scene.add(newWallBox);
-          wallsInWorld.push(newWallBox);
+          if (tileAt.index === 17) {
+            var newWallBox = new THREE.Mesh(boxGeom, testMaterial);
+            newWallBox.position.set(x, 0, y);
+            scene.add(newWallBox);
+            wallsInWorld.push(newWallBox);
+            tileAt.properties.wallMesh = newWallBox;
+          } else {
+            if (tileAt.index === 2) {
+              var newWallBox = new THREE.Mesh(boxGeom, wallMaterial);
+              newWallBox.scale.set(1, 25, 1);
+              newWallBox.position.set(x, 12.5, y);
+              scene.add(newWallBox);
+              wallsInWorld.push(newWallBox);
+              tileAt.properties.wallMesh = newWallBox;
+            }
+          }
         }
       }
     }
 
-    camera.position.y = 8;
+    camera.position.y = 9.3;
   };
   updateThreeScene = function(gameplayState) {
     testMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
     testMaterial.needsUpdate = true;
     playerMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
     playerMaterial.needsUpdate = true;
+    wallMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
+    wallMaterial.needsUpdate = true;
 
     if (gameplayState.player.data.moveDirection.getMagnitudeSq() > Epsilon) {
       playerAnimations["Idle"].stop();
@@ -311,8 +349,23 @@ var threeAllAssetsLoaded = false;
     playerInWorld.position.y = 0;
     playerInWorld.position.z = (gameplayState.player.y - gameplayState.player.height * 0.5) * WorldScale;
     playerInWorld.rotation.y = (gameplayState.player.rotation - (Math.PI * 0.5)) * -1;
-    camera.position.x = (gameplayState.game.camera.x + (gameplayState.game.width * 0.5)) *  WorldScale;
-    camera.position.z = (gameplayState.game.camera.y + (gameplayState.game.height * 0.5)) * WorldScale + 3;
+    
+    var targetX = (gameplayState.game.camera.x + (gameplayState.game.width * 0.5)) *  WorldScale;
+    var targetZ = (gameplayState.game.camera.y + (gameplayState.game.height * 0.5)) * WorldScale + 3;
+
+    const pillarSpotX = targetX / PillarSpacing;
+    const pillarSpotY = targetZ / PillarSpacing;
+    if ((~~(pillarSpotX) % 2 === 0) && (~~(pillarSpotY) % 2 === 0)) {
+      targetZ -= ((pillarSpotY - Math.floor(pillarSpotY)) * PillarSpacing) + 0.4;
+
+      camera.position.y = 10.5;
+    } else {
+      camera.position.y = 9.3;
+    }
+
+    camera.position.x = lerp(camera.position.x, targetX, 0.25);
+    camera.position.z = lerp(camera.position.z, targetZ, 0.25);
+
     camera.lookAt(playerInWorld.position.x, 0, playerInWorld.position.z);
   };
 

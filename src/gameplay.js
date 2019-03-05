@@ -29,17 +29,18 @@ Gameplay.prototype.shutdown = function() {
 Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
 
+
   var mapCsv = '';
-  noise.seed(0.24);
+  noise.seed(101);
   for (var x = 0; x < mapSize; x++) {
     for (var y = 0; y < mapSize; y++) {
       if ((x === 0) || (y === 0) || (x === (mapSize-1)) || (y === (mapSize-1))) {
-        mapCsv += '21';
+        mapCsv += '2';
+      } else if ((~~(x / PillarSpacing) % 2 === 0) && (~~(y / PillarSpacing) % 2 === 0)) {
+        mapCsv += '2';
       } else {
         var valueAt = noise.simplex2(x / 10, y / 10);
-        if (valueAt < -0.6 && ((x % 2) === 0) && ((y % 2) === 1)) {
-          mapCsv += '0';
-        } else if (valueAt > 0.1) {
+        if (valueAt > 0.1) {
           mapCsv += '17';
         } else {
           mapCsv += '-1';
@@ -56,7 +57,7 @@ Gameplay.prototype.preload = function () {
   this.game.cache.addTilemap('gen_map', null, mapCsv, Phaser.Tilemap.CSV);
 }
 Gameplay.prototype.create = function() {
-  this.player = new Player(this.game, 32, 64);
+  this.player = new Player(this.game, 300, 300);
   this.player.renderable = false;
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
@@ -98,5 +99,15 @@ Gameplay.prototype.update = function() {
 
   this.updateUI();
 
-  this.game.physics.arcade.collide(this.player, this.foregroundLayer);
+  this.game.physics.arcade.collide(this.player, this.foregroundLayer, undefined, function (player, tile) {
+    if ((player.data.state === PlayerState.STRIKE) && (tile.index === 17)) {
+      if (tile.properties.wallMesh) {
+        tile.properties.wallMesh.visible = false;
+      }
+      this.map.removeTile(tile.x, tile.y, this.foregroundLayer);
+      return false;
+    }
+
+    return true;
+  }, this);
 };
