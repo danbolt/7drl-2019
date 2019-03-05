@@ -29,7 +29,6 @@ Gameplay.prototype.shutdown = function() {
 Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
 
-
   var mapCsv = '';
   noise.seed(101);
   for (var x = 0; x < mapSize; x++) {

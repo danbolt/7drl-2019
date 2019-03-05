@@ -10,24 +10,27 @@ function angleLerp(a0,a1,t) {
     return a0 + shortAngleDist(a0,a1)*t;
 };
 
-const PlayerMoveSpeed = 210.0;
+const PlayerMoveSpeed = 190.0;
 const PlayerBurstSpeed = 270.0;
 const PlayerBurstDecayTime = 230;
-const PlayerStrikeSpeed = 800;
+const PlayerStrikeSpeed = 900;
 const PlayerStrikeDecayTime = 40;
-const PlayerStrikeTime = 70;
+const PlayerStrikeTime = 111;
 const PlayerStrikeStaminaCost = 0.35;
 const PlayerBackstepSpeed = -600;
 const PlayerBackstepDecayTime = 100;
 const PlayerBackstepTime = 50;
 const PlayerBackstepStaminaCost = 0.21;
 const PlayerStaminaReplenishRate = 0.00025;
+const PlayerWindupSpeed = -70;
+const PlayerWindupTime = 500;
 
 var PlayerState = {
   NORMAL: 0,
   STRIKE: 1,
   BACKSTEP: 2,
-  DAMAGED: 3
+  DAMAGED: 3,
+  WINDUP: 4
 };
 
 var Player = function(game, x, y) {
@@ -46,7 +49,7 @@ var Player = function(game, x, y) {
   this.game.physics.enable(this, Phaser.Physics.ARCADE);
   this.anchor.set(0.5, 0.5);
 
-  var generateStrikeStepCallback = (cost, newState, newSpeed, newTime, newDecayTime) => {
+  var generateStrikeStepCallback = (cost, newState, newSpeed, newTime, newDecayTime, windupSpeed, windupTime) => {
     return () => {
       if (this.data.state !== PlayerState.NORMAL) {
         return;
@@ -61,24 +64,39 @@ var Player = function(game, x, y) {
         this.data.burstTween = null;
       }
 
-      this.data.stamina -= cost;
-      this.data.state = newState;
-      this.data.moveSpeed = newSpeed;
-      this.data.movementTween = this.game.add.tween(this.data);
-      this.data.movementTween.to({ moveSpeed: PlayerMoveSpeed }, newDecayTime, Phaser.Easing.Cubic.In, false, newTime);
-      this.data.movementTween.onComplete.add(() => {
-        this.data.state = PlayerState.NORMAL;
-        this.data.movementTween = null;
-      });
-      this.data.movementTween.start();
+      var performAction = () => {
+        this.data.stamina -= cost;
+        this.data.state = newState;
+        this.data.moveSpeed = newSpeed;
+        this.data.movementTween = this.game.add.tween(this.data);
+        this.data.movementTween.to({ moveSpeed: PlayerMoveSpeed }, newDecayTime, Phaser.Easing.Cubic.In, false, newTime);
+        this.data.movementTween.onComplete.add(() => {
+          this.data.state = PlayerState.NORMAL;
+          this.data.movementTween = null;
+        });
+        this.data.movementTween.start();
+      };
 
       this.data.prevMoveDirection.x = this.data.moveDirection.x;
       this.data.prevMoveDirection.y = this.data.moveDirection.y;
       this.data.moveDirection.x = Math.cos(this.rotation);
       this.data.moveDirection.y = Math.sin(this.rotation);
+
+      if ((windupTime !== undefined) && (windupSpeed !== undefined)) {
+        this.data.state = PlayerState.WINDUP;
+        this.data.moveSpeed = windupSpeed;
+        this.game.time.events.add(windupTime, function () {
+          performAction();
+        }, this);
+
+        return;
+      }
+
+      performAction();
+
     };
   };
-  var strikeCallback = generateStrikeStepCallback(PlayerStrikeStaminaCost, PlayerState.STRIKE, PlayerStrikeSpeed, PlayerStrikeTime, PlayerStrikeDecayTime);
+  var strikeCallback = generateStrikeStepCallback(PlayerStrikeStaminaCost, PlayerState.STRIKE, PlayerStrikeSpeed, PlayerStrikeTime, PlayerStrikeDecayTime, PlayerWindupSpeed, PlayerWindupTime);
   var backstepCallback = generateStrikeStepCallback(PlayerBackstepStaminaCost, PlayerState.BACKSTEP, PlayerBackstepSpeed, PlayerBackstepTime, PlayerBackstepDecayTime);
 
   this.game.input.keyboard.addKey(Phaser.KeyCode.X).onDown.add(strikeCallback);

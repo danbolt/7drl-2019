@@ -54,6 +54,8 @@ var threeAllAssetsLoaded = false;
     camera = new THREE.PerspectiveCamera( 60, phaserWebGLContext.drawingBufferWidth / phaserWebGLContext.drawingBufferHeight, 0.1, 600 );
 
     renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(new THREE.Color(0.2, 0.2, 0.2), 1.0);
+    console.log(renderer);
     renderer.setSize(phaserWebGLContext.drawingBufferWidth, phaserWebGLContext.drawingBufferHeight );
     document.body.appendChild( renderer.domElement );
     renderer.domElement.style["z-index"] = -1;
