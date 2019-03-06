@@ -306,6 +306,13 @@ var threeAllAssetsLoaded = false;
       enemy.data.mesh = enemyMesh;
     }, this);
 
+    var amuletOfYendorMesh = new THREE.Mesh( testEnemyGeom, playerMaterial );
+    var amuletOfYendorPos = gameplayState.levelGenData.exit;
+    amuletOfYendorMesh.position.set(amuletOfYendorPos.x, 0, amuletOfYendorPos.y);
+    scene.add(amuletOfYendorMesh);
+    var amuletRotationTween = gameplayState.game.add.tween(amuletOfYendorMesh.rotation);
+    amuletRotationTween.to( { y: (Math.PI * 2) }, 2000, Phaser.Easing.Linear.None, true, 0, -1);
+
     // uncomment this for animation debugging
     //var helper = new THREE.SkeletonHelper( playerMesh );
     //helper.material.linewidth = 3;

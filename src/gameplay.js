@@ -8,6 +8,7 @@ var Gameplay = function () {
   this.player = null;
 
   this.enemies = null;
+  this.amulet
 
   this.map = null;
   this.foregroundLayer = null;
@@ -39,17 +40,28 @@ Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
 
   // data drive this later
-  const TEST_SEED = 101;
+  const TEST_SEED = 80;
 
   var enemySpawnSkew = new Phaser.Matrix();
 
   var posScratchPad = new Phaser.Point();
   var mapCsv = '';
   noise.seed(TEST_SEED);
+
+  const exitCleanRadius = 6;
+  const spawnCleanRadius = 5.3;
+  this.levelGenData.exit.x = mapSize - 8;
+  this.levelGenData.exit.y = mapSize - 8;
+  this.levelGenData.spawn.x = 10;
+  this.levelGenData.spawn.y = 10;
   for (var x = 0; x < mapSize; x++) {
     for (var y = 0; y < mapSize; y++) {
       posScratchPad.x = x;
       posScratchPad.y = y;
+
+      const closeToExit = (posScratchPad.distance(this.levelGenData.exit) < exitCleanRadius);
+      const closeToSpawn = (posScratchPad.distance(this.levelGenData.spawn) < spawnCleanRadius);
+      const clearFromBothSpawnAndExit = ((closeToExit === false) && (closeToSpawn === false));
 
       if ((posScratchPad.x === 0) || (posScratchPad.y === 0) || (posScratchPad.x === (mapSize-1)) || (posScratchPad.y === (mapSize-1))) {
         mapCsv += '2';
@@ -57,13 +69,15 @@ Gameplay.prototype.preload = function () {
         mapCsv += '2';
       } else {
         var valueAt = noise.simplex2(posScratchPad.x / 10, posScratchPad.y / 10);
-        if (valueAt > 0.1) {
+        if (valueAt > 0.1 && clearFromBothSpawnAndExit) {
           mapCsv += '17';
         } else {
           mapCsv += '-1';
 
           if (valueAt < -0.8) {
-            this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x });
+            if (clearFromBothSpawnAndExit) {
+              this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x });
+            }
           }
         }
       }
@@ -78,7 +92,7 @@ Gameplay.prototype.preload = function () {
   this.game.cache.addTilemap('gen_map', null, mapCsv, Phaser.Tilemap.CSV);
 }
 Gameplay.prototype.create = function() {
-  this.player = new Player(this.game, 300 - 128, 300);
+  this.player = new Player(this.game, this.levelGenData.spawn.x * GameplayTileSize, this.levelGenData.spawn.y * GameplayTileSize);
   this.player.renderable = false;
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
