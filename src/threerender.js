@@ -402,6 +402,10 @@ var threeAllAssetsLoaded = false;
   };
 
   unloadThreeScene = function() {
+    while(scene.children.length > 0){ 
+      scene.remove(scene.children[0]); 
+    }
+    
     playerInWorld = null;
     wallsInWorld = [];
   };

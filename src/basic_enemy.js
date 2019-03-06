@@ -1,6 +1,6 @@
 var BasicEnemy = function (game, x, y, player) {
   Phaser.Sprite.call(this, game, x, y, 'test_sheet', 7);
-  this.game.add.existing = this;
+  this.game.add.existing(this);
 
   this.events.onKilled.add(function () {
     if (this.data.mesh) {

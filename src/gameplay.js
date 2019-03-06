@@ -136,6 +136,18 @@ Gameplay.prototype.updateUI = function () {
 };
 
 Gameplay.prototype.update = function() {
+  
+  const xDist = (this.levelGenData.exit.x * GameplayTileSize) - this.player.x;
+  const xDistSqr = xDist * xDist;
+  const yDist = (this.levelGenData.exit.y * GameplayTileSize) - this.player.y;
+  const yDistSqr = yDist * yDist;
+  const minDistToExitSqr = 32 * 32;
+  if ((xDistSqr + yDistSqr) < minDistToExitSqr) {
+    this.game.state.start('Gameplay');
+    return;
+  }
+
+
 	updateThreeScene(this);
   renderThreeScene();
 
