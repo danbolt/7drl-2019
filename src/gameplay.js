@@ -61,10 +61,10 @@ Gameplay.prototype.preload = function () {
           mapCsv += '17';
         } else {
           mapCsv += '-1';
-        }
 
-        if (valueAt < -0.8) {
-          this.levelGenData.enemies.push({ x: posScratchPad.x, y: posScratchPad.y });
+          if (valueAt < -0.8) {
+            this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x });
+          }
         }
       }
         
