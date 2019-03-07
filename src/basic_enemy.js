@@ -16,6 +16,27 @@ var BasicEnemy = function (game, x, y, player, health, beDeadTime) {
       this.game.time.events.add(deadTime, function () {
         this.data.reviveOnNextFrame = true;
       }, this);
+
+      for (var i = 0; i < this.data.enemyHealth; i++) {
+        let m = this.data.deathParticleMesh[i];
+        m.visible = true;
+        m.matrixAutoUpdate = true;
+        m.position.set(this.x * WorldScale, 0, this.y * WorldScale);
+        var t = this.game.add.tween(m.position);
+        const startX = this.x * WorldScale;
+        const startZ = this.y * WorldScale;
+        t.to({x: [startX + (2 * Math.cos(i / this.data.enemyHealth * Math.PI * 2)), startX + (2 * Math.cos((i+1) / this.data.enemyHealth * Math.PI * 2)), startX], y: [3, 0], z: [startZ + (2 * Math.sin(i / this.data.enemyHealth * Math.PI * 2)), startZ + (2 * Math.sin((i+1) / this.data.enemyHealth * Math.PI * 2)), startZ]}, deadTime, Phaser.Easing.Cubic.InOut);
+        t.onComplete.add(() => {
+          m.visible = false;
+          m.matrixAutoUpdate = false;
+        });
+        t.interpolation(Phaser.Math.catmullRomInterpolation);
+        t.start();
+
+        var ts = this.game.add.tween(m.scale);
+        ts.to({x: [0.3, this.data.enemyHealth / health], y: [0.3, this.data.enemyHealth / health], z: [0.3, this.data.enemyHealth / health]}, deadTime, Phaser.Easing.Cubic.InOut);
+        ts.start();
+      }
     }
   }, this);
   this.events.onRevived.add(function () {
@@ -49,6 +70,7 @@ BasicEnemy.prototype.update = function() {
   if (this.position.distance(this.data.player.position) <= this.data.playerMinSightRange) {
     var theta = Math.atan2(this.data.player.position.y - this.position.y, this.data.player.position.x - this.position.x);
     this.body.velocity.set(Math.cos(theta) * this.data.moveSpeed, Math.sin(theta) * this.data.moveSpeed)
+    this.rotation = theta;
   } else {
     this.body.velocity.set(0, 0);
   }

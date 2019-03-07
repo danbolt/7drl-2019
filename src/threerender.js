@@ -304,6 +304,16 @@ var threeAllAssetsLoaded = false;
       enemyMesh.position.set(enemy.x * WorldScale, 0, enemy.y * WorldScale);
       scene.add(enemyMesh);
       enemy.data.mesh = enemyMesh;
+
+      enemy.data.deathParticleMesh = [];
+      for (var i = 0; i < 4; i++) {
+        var pMesh = new THREE.Mesh(testEnemyGeom, enemyMaterial);
+        pMesh.scale.set(0.56, 0.56, 0.56);
+        pMesh.visible = false;
+        pMesh.matrixAutoUpdate = false;
+        enemy.data.deathParticleMesh.push(pMesh);
+        scene.add(pMesh);
+      }
     }, this);
 
     gameplayState.items.forEach(function (item) {

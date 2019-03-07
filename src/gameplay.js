@@ -17,7 +17,7 @@ const testSmallStrikeConfig = {
   name: 'test small strike',
   state: PlayerState.STRIKE,
   speed: 1000,
-  decayTime: 2,
+  decayTime: 30,
   duration: 40,
   staminaCost: 0.2,
   windupSpeed: -70,
@@ -157,7 +157,7 @@ Gameplay.prototype.create = function() {
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
-    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player, 5, 1000);
+    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player, 5, 600);
     this.enemies.addChild(enemy);
   }, this);
   this.game.physics.enable(this.enemies);
