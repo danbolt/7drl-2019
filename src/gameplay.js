@@ -55,6 +55,8 @@ var Gameplay = function () {
   this.staminaBarBacking = null;
   this.staminaBar = null;
   this.itemInfoText = null;
+  this.weaponInfoText = null;
+  this.deathText = null;
 };
 Gameplay.prototype.shutdown = function() {
   unloadThreeScene();
@@ -73,6 +75,8 @@ Gameplay.prototype.shutdown = function() {
   this.staminaBarBacking = null;
   this.staminaBar = null;
   this.itemInfoText = null;
+  this.weaponInfoText = null;
+  this.deathText = null;
 };
 
 Gameplay.prototype.preload = function () {
@@ -149,6 +153,13 @@ Gameplay.prototype.preload = function () {
 Gameplay.prototype.create = function() {
   this.player = new Player(this.game, this.levelGenData.spawn.x * GameplayTileSize, this.levelGenData.spawn.y * GameplayTileSize);
   this.player.renderable = false;
+  this.player.events.onKilled.add(() => {
+    this.deathText.visible = true;
+
+    this.game.time.events.add(2000, () => {
+      this.game.state.start('Gameplay');
+    });
+  });
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
 
@@ -188,16 +199,31 @@ Gameplay.prototype.initalizeUI = function () {
   this.ui = this.game.add.group();
   this.ui.fixedToCamera = true;
 
-  this.staminaBarBacking = this.game.add.sprite(32, 32, 'test_sheet', 17);
+  const staminaBarSpot = 6;
+  this.staminaBarBacking = this.game.add.sprite(staminaBarSpot, staminaBarSpot, 'test_sheet', 17);
   this.staminaBarBacking.tint = 0x999999;
   this.staminaBarBacking.width = StaminaBarWidth;
   this.staminaBarBacking.height = StaminaBarHeight;
   this.ui.addChild(this.staminaBarBacking);
-  this.staminaBar = this.game.add.sprite(34, 34, 'test_sheet', 17);
+  this.staminaBar = this.game.add.sprite(staminaBarSpot + 2, staminaBarSpot + 2, 'test_sheet', 17);
   this.staminaBar.tint = 0x00FF00;
   this.staminaBar.width = StaminaBarWidth - 4;
   this.staminaBar.height = StaminaBarHeight - 4;
   this.ui.addChild(this.staminaBar);
+
+  this.weaponInfoText = this.game.add.bitmapText(112, staminaBarSpot, 'font', 'Move A: ohhhhhh\n\nMove B: ummm\n\nMove C: ahhh', 7);
+  console.log(this.weaponInfoText);
+  this.ui.addChild(this.weaponInfoText);
+  this.weaponInfoText.children.forEach(function(letter) {
+    var lt = this.game.add.tween(letter.scale);
+    lt.to({ y: [ (letter.scale.y), (letter.scale.y * 1.6), letter.scale.y ] }, 200 + (Math.random() * 100), Phaser.Easing.Cubic.InOut, true, Math.random() * 1000, -1);
+  }, this);
+
+  this.deathText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', 'death was inevitable', 8);
+  this.deathText.align = 'center';
+  this.deathText.anchor.set(0.5, 0.5);
+  this.deathText.visible = false;
+  this.ui.addChild(this.deathText);
 
   this.itemInfoText = this.game.add.bitmapText(32, 32, 'font', 'a!aaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 8);
   this.itemInfoText.children.forEach(function(letter) {

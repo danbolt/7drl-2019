@@ -218,6 +218,8 @@ var threeAllAssetsLoaded = false;
     var boxMesh = new THREE.Mesh( boxGeom, playerMaterial );
 
     var playerMesh = modelsMap['player_test'];
+    playerMesh.visible = true;
+    playerMesh.matrixAutoUpdate = true;
 
     var torsoBone = playerMesh.getObjectByName('Armature001_Bone016');
     var torso = new THREE.Mesh(boxGeom, playerMaterial);
