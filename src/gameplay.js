@@ -115,7 +115,7 @@ Gameplay.prototype.preload = function () {
       } else {
         var valueAt = noise.simplex2(posScratchPad.x / 10, posScratchPad.y / 10);
         if (valueAt > 0.1 && clearFromBothSpawnAndExit) {
-          mapCsv += '-1';
+          mapCsv += '17';
         } else {
           mapCsv += '-1';
 
@@ -154,6 +154,7 @@ Gameplay.prototype.create = function() {
 
   this.player.setAButtonConfig(testLongStrikeConfig);
   this.player.setBButtonConfig(testSmallStrikeConfig);
+  this.player.setCButtonConfig(testBackstepConfig);
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {

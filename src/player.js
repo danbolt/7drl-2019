@@ -40,6 +40,7 @@ var Player = function(game, x, y) {
   // keyboard input initalization
   const aButtonKey = Phaser.KeyCode.X;
   const bButtonKey = Phaser.KeyCode.C;
+  const cButtonKey = Phaser.KeyCode.V;
   const downKey = Phaser.KeyCode.DOWN;
   const upKey = Phaser.KeyCode.UP;
   const leftKey = Phaser.KeyCode.LEFT;
@@ -47,10 +48,12 @@ var Player = function(game, x, y) {
   this.data.inputInfo = {
     inputDirection: new Phaser.Point(0, 0),
     aButtonCallback: () => {},
-    bButtonCallback: () => {}
+    bButtonCallback: () => {},
+    cButtonCallback: () => {}
   };
   this.game.input.keyboard.addKey(aButtonKey).onDown.add( () => { this.data.inputInfo.aButtonCallback(); });
   this.game.input.keyboard.addKey(bButtonKey).onDown.add( () => { this.data.inputInfo.bButtonCallback(); });
+  this.game.input.keyboard.addKey(cButtonKey).onDown.add( () => { this.data.inputInfo.bCuttonCallback(); });
   var rightArrowKey = this.game.input.keyboard.addKey(rightKey);
   rightArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.x += 1.0; }, this);
   rightArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.x -= 1.0; }, this); 
@@ -74,6 +77,8 @@ var Player = function(game, x, y) {
       this.data.inputInfo.aButtonCallback();
     } else if (buttonCode === Phaser.Gamepad.XBOX360_B) {
       this.data.inputInfo.bButtonCallback();
+    } else if (buttonCode === Phaser.Gamepad.XBOX360_X) {
+      this.data.inputInfo.bCuttonCallback();
     }
   });
 
@@ -160,6 +165,9 @@ Player.prototype.setAButtonConfig = function(config) {
 };
 Player.prototype.setBButtonConfig = function(config) {
   this.data.inputInfo.bButtonCallback = this.generateStrikeStepCallbackFromConfig(config);
+};
+Player.prototype.setCButtonConfig = function(config) {
+  this.data.inputInfo.bCuttonCallback = this.generateStrikeStepCallbackFromConfig(config);
 };
 Player.prototype.updateVelocityFromDirection = function() {
   const prevDirectionLengthSqr = this.data.prevMoveDirection.getMagnitudeSq();
