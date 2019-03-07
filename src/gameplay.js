@@ -1,18 +1,29 @@
 const StaminaBarWidth = 96;
 const StaminaBarHeight = 16;
 
-const testAButtonWeaponConfig = {
+const testLongStrikeConfig = {
   name: 'test strike',
   state: PlayerState.STRIKE,
   speed: 900,
   decayTime: 40,
   duration: 111,
-  staminaCost: 0.35,
+  staminaCost: 0.411,
   windupSpeed: -70,
   windupTime: 500
 };
 
-const testBButtonWeaponConfig = {
+const testSmallStrikeConfig = {
+  name: 'test small strike',
+  state: PlayerState.STRIKE,
+  speed: 1000,
+  decayTime: 10,
+  duration: 40,
+  staminaCost: 0.25,
+  windupSpeed: -70,
+  windupTime: 100
+};
+
+const testBackstepConfig = {
   name: 'backstep',
   state: PlayerState.BACKSTEP,
   speed: -600,
@@ -138,8 +149,8 @@ Gameplay.prototype.create = function() {
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
 
-  this.player.setAButtonConfig(testAButtonWeaponConfig);
-  this.player.setBButtonConfig(testBButtonWeaponConfig);
+  this.player.setAButtonConfig(testLongStrikeConfig);
+  this.player.setBButtonConfig(testSmallStrikeConfig);
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
