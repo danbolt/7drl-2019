@@ -306,6 +306,14 @@ var threeAllAssetsLoaded = false;
       enemy.data.mesh = enemyMesh;
     }, this);
 
+    gameplayState.items.forEach(function (item) {
+      var itemMesh = new THREE.Mesh(boxGeom, playerMaterial);
+      itemMesh.rotation.set(Math.PI * 0.25, Math.PI * 0.25, Math.PI * 0.25);
+      itemMesh.position.set(item.x * WorldScale, 0, item.y * WorldScale);
+      scene.add(itemMesh);
+      item.data.mesh = itemMesh;
+    }, this);
+
     var amuletOfYendorMesh = new THREE.Mesh( testEnemyGeom, playerMaterial );
     var amuletOfYendorPos = gameplayState.levelGenData.exit;
     amuletOfYendorMesh.position.set(amuletOfYendorPos.x, 0, amuletOfYendorPos.y);
@@ -405,7 +413,7 @@ var threeAllAssetsLoaded = false;
     while(scene.children.length > 0){ 
       scene.remove(scene.children[0]); 
     }
-    
+
     playerInWorld = null;
     wallsInWorld = [];
   };
