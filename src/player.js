@@ -10,21 +10,6 @@ function angleLerp(a0,a1,t) {
     return a0 + shortAngleDist(a0,a1)*t;
 };
 
-const PlayerMoveSpeed = 190.0;
-const PlayerBurstSpeed = 270.0;
-const PlayerBurstDecayTime = 230;
-const PlayerStrikeSpeed = 900;
-const PlayerStrikeDecayTime = 40;
-const PlayerStrikeTime = 111;
-const PlayerStrikeStaminaCost = 0.35;
-const PlayerBackstepSpeed = -600;
-const PlayerBackstepDecayTime = 100;
-const PlayerBackstepTime = 50;
-const PlayerBackstepStaminaCost = 0.21;
-const PlayerStaminaReplenishRate = 0.00025;
-const PlayerWindupSpeed = -70;
-const PlayerWindupTime = 500;
-
 var PlayerState = {
   NORMAL: 0,
   STRIKE: 1,
@@ -32,6 +17,11 @@ var PlayerState = {
   DAMAGED: 3,
   WINDUP: 4
 };
+
+const PlayerMoveSpeed = 190.0;
+const PlayerBurstSpeed = 270.0;
+const PlayerBurstDecayTime = 230;
+const PlayerStaminaReplenishRate = 0.00025;
 
 var Player = function(game, x, y) {
   Phaser.Sprite.call(this, game, x, y, 'test_sheet', 17);
@@ -96,8 +86,23 @@ var Player = function(game, x, y) {
 
   this.game.physics.enable(this, Phaser.Physics.ARCADE);
   this.anchor.set(0.5, 0.5);
+}
+Player.prototype = Object.create(Phaser.Sprite.prototype);
+Player.prototype.constructor = Player;
+Player.prototype.updateDirectionFromInput = function() {
+  this.data.prevMoveDirection.x = this.data.moveDirection.x;
+  this.data.prevMoveDirection.y = this.data.moveDirection.y;
 
-  var generateStrikeStepCallback = (cost, newState, newSpeed, newTime, newDecayTime, windupSpeed, windupTime) => {
+  if (this.data.state === PlayerState.NORMAL) {
+    this.data.moveDirection.x = this.data.inputInfo.inputDirection.x;
+    this.data.moveDirection.y = this.data.inputInfo.inputDirection.y;
+  }
+
+  this.data.moveDirection.normalize();
+};
+
+Player.prototype.generateStrikeStepCallbackFromConfig = function(config) {
+    var generateStrikeStepCallback = (cost, newState, newSpeed, newTime, newDecayTime, windupSpeed, windupTime) => {
     return () => {
       if (this.data.state !== PlayerState.NORMAL) {
         return;
@@ -144,21 +149,14 @@ var Player = function(game, x, y) {
 
     };
   };
-  this.data.inputInfo.aButtonCallback = generateStrikeStepCallback(PlayerStrikeStaminaCost, PlayerState.STRIKE, PlayerStrikeSpeed, PlayerStrikeTime, PlayerStrikeDecayTime, PlayerWindupSpeed, PlayerWindupTime);
-  this.data.inputInfo.bButtonCallback = generateStrikeStepCallback(PlayerBackstepStaminaCost, PlayerState.BACKSTEP, PlayerBackstepSpeed, PlayerBackstepTime, PlayerBackstepDecayTime);
-}
-Player.prototype = Object.create(Phaser.Sprite.prototype);
-Player.prototype.constructor = Player;
-Player.prototype.updateDirectionFromInput = function() {
-  this.data.prevMoveDirection.x = this.data.moveDirection.x;
-  this.data.prevMoveDirection.y = this.data.moveDirection.y;
 
-  if (this.data.state === PlayerState.NORMAL) {
-    this.data.moveDirection.x = this.data.inputInfo.inputDirection.x;
-    this.data.moveDirection.y = this.data.inputInfo.inputDirection.y;
-  }
-
-  this.data.moveDirection.normalize();
+  return generateStrikeStepCallback(config.staminaCost, config.state, config.speed, config.duration, config.decayTime, config.windupSpeed, config.windupTime);
+};
+Player.prototype.setAButtonConfig = function(config) {
+  this.data.inputInfo.aButtonCallback = this.generateStrikeStepCallbackFromConfig(config);
+};
+Player.prototype.setBButtonConfig = function(config) {
+  this.data.inputInfo.bButtonCallback = this.generateStrikeStepCallbackFromConfig(config);
 };
 Player.prototype.updateVelocityFromDirection = function() {
   const prevDirectionLengthSqr = this.data.prevMoveDirection.getMagnitudeSq();

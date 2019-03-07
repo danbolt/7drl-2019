@@ -1,6 +1,28 @@
 const StaminaBarWidth = 96;
 const StaminaBarHeight = 16;
 
+const testAButtonWeaponConfig = {
+  name: 'test strike',
+  state: PlayerState.STRIKE,
+  speed: 900,
+  decayTime: 40,
+  duration: 111,
+  staminaCost: 0.35,
+  windupSpeed: -70,
+  windupTime: 500
+};
+
+const testBButtonWeaponConfig = {
+  name: 'backstep',
+  state: PlayerState.BACKSTEP,
+  speed: -600,
+  decayTime: 100,
+  duration: 50,
+  staminaCost: 0.19,
+  windupSpeed: undefined,
+  windupTime: undefined
+};
+
 // randomize me later
 const mapSize = 100;
 
@@ -85,7 +107,12 @@ Gameplay.prototype.preload = function () {
 
           var itemNoiseValueAt = noise.simplex2(translatedScratchPad.x, translatedScratchPad.y);
           if (itemNoiseValueAt > 0.9) {
-            this.levelGenData.items.push( { x: posScratchPad.y, y: posScratchPad.x, name: 'wistful longing\n' + itemNoiseValueAt } );
+            this.levelGenData.items.push( {
+              x: posScratchPad.y,
+              y: posScratchPad.x,
+              name: 'test name',
+              
+            });
           }
 
           if (valueAt < -0.8) {
@@ -110,6 +137,9 @@ Gameplay.prototype.create = function() {
   this.player.renderable = false;
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
+
+  this.player.setAButtonConfig(testAButtonWeaponConfig);
+  this.player.setBButtonConfig(testBButtonWeaponConfig);
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
@@ -194,9 +224,11 @@ Gameplay.prototype.update = function() {
     }
   }, undefined, this);
   this.game.physics.arcade.overlap(this.player, this.items, function(player, item) {
-    this.itemInfoText.visible = true;
-    this.itemInfoText.text = item.data.info.name;
-    this.itemInfoText.position.set((item.data.mesh.position.x * GameplayTileSize) - this.game.camera.x, 32 + (item.data.mesh.position.z * GameplayTileSize) - this.game.camera.y)
+    if (player.data.state === PlayerState.NORMAL) {
+      this.itemInfoText.visible = true;
+      this.itemInfoText.text = item.data.info.name;
+      this.itemInfoText.position.set((item.data.mesh.position.x * GameplayTileSize) - this.game.camera.x, 32 + (item.data.mesh.position.z * GameplayTileSize) - this.game.camera.y)
+    }
   }, undefined, this);
   this.game.physics.arcade.collide(this.enemies, this.foregroundLayer);
   this.game.physics.arcade.collide(this.player, this.foregroundLayer, undefined, function (player, tile) {
