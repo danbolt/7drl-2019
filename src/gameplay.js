@@ -4,23 +4,25 @@ const StaminaBarHeight = 16;
 const testLongStrikeConfig = {
   name: 'test strike',
   state: PlayerState.STRIKE,
-  speed: 900,
-  decayTime: 40,
+  speed: 1000,
+  decayTime: 90,
   duration: 111,
   staminaCost: 0.411,
   windupSpeed: -70,
-  windupTime: 500
+  windupTime: 500,
+  power: 4
 };
 
 const testSmallStrikeConfig = {
   name: 'test small strike',
   state: PlayerState.STRIKE,
   speed: 1000,
-  decayTime: 10,
+  decayTime: 2,
   duration: 40,
-  staminaCost: 0.25,
+  staminaCost: 0.2,
   windupSpeed: -70,
-  windupTime: 100
+  windupTime: 100,
+  power: 2
 };
 
 const testBackstepConfig = {
@@ -31,7 +33,8 @@ const testBackstepConfig = {
   duration: 50,
   staminaCost: 0.19,
   windupSpeed: undefined,
-  windupTime: undefined
+  windupTime: undefined,
+  power: undefined
 };
 
 // randomize me later
@@ -112,7 +115,7 @@ Gameplay.prototype.preload = function () {
       } else {
         var valueAt = noise.simplex2(posScratchPad.x / 10, posScratchPad.y / 10);
         if (valueAt > 0.1 && clearFromBothSpawnAndExit) {
-          mapCsv += '17';
+          mapCsv += '-1';
         } else {
           mapCsv += '-1';
 
@@ -154,7 +157,7 @@ Gameplay.prototype.create = function() {
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
-    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player);
+    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player, 5, 1000);
     this.enemies.addChild(enemy);
   }, this);
   this.game.physics.enable(this.enemies);
@@ -229,7 +232,7 @@ Gameplay.prototype.update = function() {
 
   this.game.physics.arcade.overlap(this.player, this.enemies, function (player, enemy) {
     if (player.data.state === PlayerState.STRIKE) {
-      enemy.kill();
+      enemy.damage(player.data.powerValue)
     } else {
       player.kill();
     }

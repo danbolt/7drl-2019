@@ -35,6 +35,7 @@ var Player = function(game, x, y) {
   this.data.movementTween = null;
   this.data.state = PlayerState.NORMAL;
   this.data.stamina = 1.0;
+  this.data.powerValue = 0;
 
   // keyboard input initalization
   const aButtonKey = Phaser.KeyCode.X;
@@ -102,7 +103,7 @@ Player.prototype.updateDirectionFromInput = function() {
 };
 
 Player.prototype.generateStrikeStepCallbackFromConfig = function(config) {
-    var generateStrikeStepCallback = (cost, newState, newSpeed, newTime, newDecayTime, windupSpeed, windupTime) => {
+    var generateStrikeStepCallback = (cost, newState, newSpeed, newTime, newDecayTime, windupSpeed, windupTime, power) => {
     return () => {
       if (this.data.state !== PlayerState.NORMAL) {
         return;
@@ -118,6 +119,7 @@ Player.prototype.generateStrikeStepCallbackFromConfig = function(config) {
       }
 
       var performAction = () => {
+        this.data.powerValue = power;
         this.data.stamina -= cost;
         this.data.state = newState;
         this.data.moveSpeed = newSpeed;
@@ -126,6 +128,7 @@ Player.prototype.generateStrikeStepCallbackFromConfig = function(config) {
         this.data.movementTween.onComplete.add(() => {
           this.data.state = PlayerState.NORMAL;
           this.data.movementTween = null;
+          this.data.powerValue = 0;
         });
         this.data.movementTween.start();
       };
@@ -150,7 +153,7 @@ Player.prototype.generateStrikeStepCallbackFromConfig = function(config) {
     };
   };
 
-  return generateStrikeStepCallback(config.staminaCost, config.state, config.speed, config.duration, config.decayTime, config.windupSpeed, config.windupTime);
+  return generateStrikeStepCallback(config.staminaCost, config.state, config.speed, config.duration, config.decayTime, config.windupSpeed, config.windupTime, config.power);
 };
 Player.prototype.setAButtonConfig = function(config) {
   this.data.inputInfo.aButtonCallback = this.generateStrikeStepCallbackFromConfig(config);
