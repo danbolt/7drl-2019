@@ -42,6 +42,9 @@ const mapSize = 100;
 
 var Gameplay = function () {
   this.player = null;
+  this.aButtonItem = null;
+  this.bButtonItem = null;
+  this.cButtonItem = null;
 
   this.enemies = null;
   this.items = null;
@@ -62,6 +65,9 @@ Gameplay.prototype.shutdown = function() {
   unloadThreeScene();
 
   this.player = null;
+  this.aButtonItem = null;
+  this.bButtonItem = null;
+  this.cButtonItem = null;
 
   this.enemies = null;
   this.items = null;
@@ -163,10 +169,6 @@ Gameplay.prototype.create = function() {
   this.game.camera.follow(this.player);
   this.game.camera.bounds = null;
 
-  this.player.setAButtonConfig(testLongStrikeConfig);
-  this.player.setBButtonConfig(testSmallStrikeConfig);
-  this.player.setCButtonConfig(testBackstepConfig);
-
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
     var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player, 5, 600);
@@ -193,6 +195,11 @@ Gameplay.prototype.create = function() {
 
   this.initalizeUI();
 
+  this.setAButtonConfig(testLongStrikeConfig);
+  this.setBButtonConfig(testSmallStrikeConfig);
+  this.setCButtonConfig(testBackstepConfig);
+  this.refreshWeaponInfoText();
+
   initalizeThreeScene(this);
 };
 Gameplay.prototype.initalizeUI = function () {
@@ -218,11 +225,11 @@ Gameplay.prototype.initalizeUI = function () {
   this.staminaBar.height = StaminaBarHeight - 4;
   this.ui.addChild(this.staminaBar);
 
-  this.weaponInfoText = this.game.add.bitmapText(112, staminaBarSpot, 'font', 'Move A: ohhhhhh\n\nMove B: ummm\n\nMove C: ahhh', 7);
+  this.weaponInfoText = this.game.add.bitmapText(112, staminaBarSpot, 'font', 'Move A: ohhhhhaaaaaaaaaaaaaaaaaaaaaah\n\nMove B: umaaaaaaaaaaaaaaaaaaaaaamm\n\nMove C: ahhaaaaaaaaaaaaaaaaaaaaaah', 7);
   this.ui.addChild(this.weaponInfoText);
   jibberize(this.weaponInfoText);
 
-  this.deathText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', 'death was inevitable', 8);
+  this.deathText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', 'death is inevitable', 8);
   this.deathText.align = 'center';
   this.deathText.anchor.set(0.5, 0.5);
   this.deathText.visible = false;
@@ -239,6 +246,21 @@ Gameplay.prototype.updateUI = function () {
   this.staminaBar.width = (StaminaBarWidth - 4) * this.player.data.stamina;
 
   this.itemInfoText.visible = false;
+};
+Gameplay.prototype.refreshWeaponInfoText = function() {
+  this.weaponInfoText.text = 'Move A: ' + this.aButtonItem.name + '\nMove B: ' + this.bButtonItem.name + '\nMove C: ' + this.cButtonItem.name;
+}
+Gameplay.prototype.setAButtonConfig = function(config) {
+  this.player.setAButtonConfig(config);
+  this.aButtonItem = config;
+};
+Gameplay.prototype.setBButtonConfig = function(config) {
+  this.player.setBButtonConfig(config);
+  this.bButtonItem = config;
+};
+Gameplay.prototype.setCButtonConfig = function(config) {
+  this.player.setCButtonConfig(config);
+  this.cButtonItem = config;
 };
 
 Gameplay.prototype.update = function() {
