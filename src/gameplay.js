@@ -199,6 +199,13 @@ Gameplay.prototype.initalizeUI = function () {
   this.ui = this.game.add.group();
   this.ui.fixedToCamera = true;
 
+  let jibberize = (bitmapText) => {
+    bitmapText.children.forEach(function(letter) {
+      var lt = this.game.add.tween(letter.scale);
+      lt.to({ y: [ (letter.scale.y), (letter.scale.y * 1.6), letter.scale.y ] }, 200 + (Math.random() * 100), Phaser.Easing.Cubic.InOut, true, Math.random() * 1000, -1);
+    }, this);
+  };
+
   const staminaBarSpot = 6;
   this.staminaBarBacking = this.game.add.sprite(staminaBarSpot, staminaBarSpot, 'test_sheet', 17);
   this.staminaBarBacking.tint = 0x999999;
@@ -212,24 +219,18 @@ Gameplay.prototype.initalizeUI = function () {
   this.ui.addChild(this.staminaBar);
 
   this.weaponInfoText = this.game.add.bitmapText(112, staminaBarSpot, 'font', 'Move A: ohhhhhh\n\nMove B: ummm\n\nMove C: ahhh', 7);
-  console.log(this.weaponInfoText);
   this.ui.addChild(this.weaponInfoText);
-  this.weaponInfoText.children.forEach(function(letter) {
-    var lt = this.game.add.tween(letter.scale);
-    lt.to({ y: [ (letter.scale.y), (letter.scale.y * 1.6), letter.scale.y ] }, 200 + (Math.random() * 100), Phaser.Easing.Cubic.InOut, true, Math.random() * 1000, -1);
-  }, this);
+  jibberize(this.weaponInfoText);
 
   this.deathText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', 'death was inevitable', 8);
   this.deathText.align = 'center';
   this.deathText.anchor.set(0.5, 0.5);
   this.deathText.visible = false;
   this.ui.addChild(this.deathText);
+  jibberize(this.deathText);
 
   this.itemInfoText = this.game.add.bitmapText(32, 32, 'font', 'a!aaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 8);
-  this.itemInfoText.children.forEach(function(letter) {
-    var lt = this.game.add.tween(letter.scale);
-    lt.to({ y: [ (letter.scale.y), (letter.scale.y * 1.6), letter.scale.y ] }, 200, Phaser.Easing.Cubic.InOut, true, Math.random() * 1000, -1);
-  }, this);
+  jibberize(this.itemInfoText);
   this.itemInfoText.anchor.x = 0.5;
   this.itemInfoText.align = 'center';
   this.ui.addChild(this.itemInfoText);
