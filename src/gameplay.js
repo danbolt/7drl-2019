@@ -10,7 +10,7 @@ const testLongStrikeConfig = {
   staminaCost: 0.411,
   windupSpeed: -70,
   windupTime: 500,
-  power: 4
+  power: 7
 };
 
 const testSmallStrikeConfig = {
@@ -25,6 +25,18 @@ const testSmallStrikeConfig = {
   power: 2
 };
 
+const testMediumStrikeConfig = {
+  name: 'test medium strike',
+  state: PlayerState.STRIKE,
+  speed: 1000,
+  decayTime: 50,
+  duration: 70,
+  staminaCost: 0.3,
+  windupSpeed: -70,
+  windupTime: 250,
+  power: 3
+};
+
 const testBackstepConfig = {
   name: 'backstep',
   state: PlayerState.BACKSTEP,
@@ -32,6 +44,18 @@ const testBackstepConfig = {
   decayTime: 100,
   duration: 50,
   staminaCost: 0.19,
+  windupSpeed: undefined,
+  windupTime: undefined,
+  power: undefined
+};
+
+const testBigBackstepConfig = {
+  name: 'big backstep',
+  state: PlayerState.BACKSTEP,
+  speed: -800,
+  decayTime: 80,
+  duration: 90,
+  staminaCost: 0.4,
   windupSpeed: undefined,
   windupTime: undefined,
   power: undefined
@@ -85,12 +109,171 @@ Gameplay.prototype.shutdown = function() {
   this.deathText = null;
 };
 
+var itemDistReport = {
+  big: 0,
+  medium: 0,
+  short:0 ,
+
+  bigBack:  0,
+  smallBack: 0
+};
+
+const bigStrikeNames = [
+  'ardent',
+  'knowing',
+  'devoted',
+  'comitted',
+  'zealous',
+  'content',
+  'starved',
+  'stonelike',
+  'finished',
+  'dying',
+  'lying'
+];
+const midStrikeNames = [
+  'even',
+  'anxious',
+  'fearful',
+  'scarred',
+  'cautious',
+  'unliving',
+  'jaded',
+  'pained',
+  'coy',
+  'untrusting',
+  'worshipped',
+  'survived',
+  'remained',
+  'false'
+];
+const shortStrikeNames = [
+  'enraged',
+  'sporadic',
+  'vigorous',
+  'burning',
+  'naive',
+  'open',
+  'turbulent',
+  'weak',
+  'blind',
+  'truthful',
+  'mocked',
+  'merciful',
+  'abandoned'
+];
+
+const suffixNames = [
+  'wind',
+  'heart',
+  'pages',
+  'foe',
+  'beheading',
+  'jolt',
+  'itch',
+  'grounds',
+  'icon',
+  'scratch'
+];
+
+const backStepNames = [
+  'rumnating',
+  'shocked',
+  'fumbling',
+  'red',
+  'embarassed',
+  'apologetic',
+  'fraught',
+  'hindered',
+  'unlovable'
+];
+
+const bigBackStepNames = [
+  'hateful',
+  'cunning',
+  'corrupt',
+  'obidient',
+  'honest',
+  'dishonest',
+  'attractive',
+  'surreal'
+];
+
+Gameplay.prototype.generateItem = function(rng) {
+  var t = rng.frac();
+
+  var val = {
+    name: t,
+    x: -1,
+    y: -1,
+    state: PlayerState.NORMAL,
+    speed: 0,
+    decayTime: 0,
+    duration: 0,
+    staminaCost: 1.0,
+    windupSpeed: 0,
+    windupTime: 0,
+    power: 0
+  };
+
+  var genName = function (first, second, t, t2) {
+    const firstIndex = ~~(t * first.length);
+    const secondIndex = ~~(t2 * second.length);
+    return first[firstIndex] + ' ' + second[secondIndex];
+  };
+
+  if (t < 0.7) {
+    val.state = PlayerState.STRIKE;
+    const scaledT = rng.frac();
+    const subT = rng.frac();
+    const subT2 = rng.frac();
+
+    const ShortWindup = 0;
+    const LongDuration = 1;
+    const FastSpeed = 2;
+    const LowStaminaCost = 3; 
+    const LongDecay = 4;
+    const HiPower = 5;
+    const bonusValue = rng.integerInRange(ShortWindup, HiPower);
+
+    if (scaledT < 0.333) {
+      Object.assign(val, testLongStrikeConfig);
+      val.name = genName(bigStrikeNames, suffixNames, (subT + (bonusValue / 6.0)) / 2.0, subT2);
+    } else if (scaledT < 0.666) {
+      Object.assign(val, testSmallStrikeConfig);
+      val.name = genName(shortStrikeNames, suffixNames, (subT + (bonusValue / 6.0)) / 2.0, subT2);
+    } else {
+      Object.assign(val, testMediumStrikeConfig);
+      val.name = genName(midStrikeNames, suffixNames, (subT + (bonusValue / 6.0)) / 2.0, subT2);
+      //
+    }
+  } else {
+    val.state = PlayerState.BACKSTEP;
+    var scaledT = rng.frac();
+    const subT = rng.frac();
+    const subT2 = rng.frac();
+
+    if (scaledT < 0.3) {
+      Object.assign(val, testBigBackstepConfig);
+      val.name = genName(bigBackStepNames, suffixNames, subT, subT2);
+    } else {
+      Object.assign(val, testBackstepConfig);
+      val.name = genName(backStepNames, suffixNames, subT, subT2);
+    }
+  }
+
+  return val;
+};
+
 Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
   this.levelGenData = { enemies: [], items: [], exit: new Phaser.Point(-1, -1), spawn: new Phaser.Point(-1, -1) };
 
   // data drive this later
-  const TEST_SEED = 80;
+  const TEST_SEED = 101;
+
+  var rng = new Phaser.RandomDataGenerator([TEST_SEED]);
+  noise.seed(rng.realInRange(0, 65536));
 
   var enemySpawnSkew = new Phaser.Matrix();
 
@@ -100,10 +283,9 @@ Gameplay.prototype.preload = function () {
   translationMatrix.translate(-2000, 0);
   translationMatrix.rotate(Math.PI);
   var mapCsv = '';
-  noise.seed(TEST_SEED);
 
   const exitCleanRadius = 6;
-  const spawnCleanRadius = 5.3;
+  const spawnCleanRadius = 7.6;
   this.levelGenData.exit.x = mapSize - 8;
   this.levelGenData.exit.y = mapSize - 8;
   this.levelGenData.spawn.x = 10;
@@ -130,13 +312,11 @@ Gameplay.prototype.preload = function () {
           mapCsv += '-1';
 
           var itemNoiseValueAt = noise.simplex2(translatedScratchPad.x, translatedScratchPad.y);
-          if (itemNoiseValueAt > 0.9) {
-            this.levelGenData.items.push( {
-              x: posScratchPad.y,
-              y: posScratchPad.x,
-              name: 'test name',
-              
-            });
+          if (itemNoiseValueAt > 0.9 && clearFromBothSpawnAndExit) {
+            var newItem = this.generateItem(rng);
+            newItem.x = posScratchPad.y;
+            newItem.y = posScratchPad.x;
+            this.levelGenData.items.push(newItem);
           }
 
           if (valueAt < -0.8) {
