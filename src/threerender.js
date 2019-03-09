@@ -25,6 +25,7 @@ var threeAllAssetsLoaded = false;
   var playerAnimations = undefined;
   var wallsInWorld = [];
   var needUpdateWalls = true;
+  var floorTiles = [];
 
   var testMaterial = undefined;
   var playerMaterial = undefined;
@@ -211,6 +212,14 @@ var threeAllAssetsLoaded = false;
     enemyMaterial = testMaterial.clone();
     enemyMaterial.uniforms.ambianceColor.value.set(0.9, 0.8, 0.0, 1.0);
     enemyMaterial.needsUpdate = true;
+
+    floorMaterial = testMaterial.clone();
+    floorMaterial.uniforms.ambianceColor.value.set(0.74, 0.3, 0.3, 0.6);
+    floorMaterial.needsUpdate = true;
+
+    floorMaterial2 = testMaterial.clone();
+    floorMaterial2.uniforms.ambianceColor.value.set(0.74, 0.3, 0.3, 0.6);
+    floorMaterial2.needsUpdate = true;
   }
 
   var initializePlayerGeom = function() {
@@ -333,6 +342,14 @@ var threeAllAssetsLoaded = false;
     var amuletRotationTween = gameplayState.game.add.tween(amuletOfYendorMesh.rotation);
     amuletRotationTween.to( { y: (Math.PI * 2) }, 2000, Phaser.Easing.Linear.None, true, 0, -1);
 
+    var tileGeom = new THREE.PlaneBufferGeometry(1, 1, 5, 5)
+    for (var i = 0; i < 20; i++) {
+      var tileMesh = new THREE.Mesh( tileGeom, (i > 10) ? floorMaterial : floorMaterial2 );
+      scene.add(tileMesh);
+      floorTiles.push(tileMesh);
+      tileMesh.rotation.set(Math.PI * -0.5, 0.0, 0.0);
+    }
+
     // uncomment this for animation debugging
     //var helper = new THREE.SkeletonHelper( playerMesh );
     //helper.material.linewidth = 3;
@@ -376,6 +393,12 @@ var threeAllAssetsLoaded = false;
     wallMaterial.needsUpdate = true;
     enemyMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
     enemyMaterial.needsUpdate = true;
+    floorMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
+    floorMaterial.uniforms.ambianceColor.value.set(0.1 * (Math.sin(gameplayState.game.time.now * 0.01) * 0.5 + 0.5), 0, 0);
+    floorMaterial.needsUpdate = true;
+    floorMaterial2.uniforms.time.value += gameplayState.game.time.elapsed;
+    floorMaterial2.uniforms.ambianceColor.value.set(0.1 * (Math.sin(gameplayState.game.time.now * 0.01 + 2) * 0.5 + 0.5), 0, 0);
+    floorMaterial2.needsUpdate = true;
 
     if (gameplayState.player.data.moveDirection.getMagnitudeSq() > Epsilon) {
       playerAnimations["Idle"].stop();
@@ -404,6 +427,14 @@ var threeAllAssetsLoaded = false;
       camera.position.y = 9.3;
     }
 
+    const q = 14;
+    if (~~(gameplayState.game.time.now * 0.01) % 4 === 0) {
+      floorTiles.forEach(function (tile, i) {
+        const r = (i < 16) ? q : 3;
+        tile.position.set(targetX - ~~(r * 0.5) + ~~(Math.random() * r), -0.5, targetZ - ~~(r * 0.5) + ~~(Math.random() * r));
+      });
+    }
+
     camera.position.x = lerp(camera.position.x, targetX, 0.25);
     camera.position.z = lerp(camera.position.z, targetZ, 0.25);
 
@@ -428,5 +459,6 @@ var threeAllAssetsLoaded = false;
 
     playerInWorld = null;
     wallsInWorld = [];
+    floorTiles = [];
   };
 })();

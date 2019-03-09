@@ -2,7 +2,7 @@ const StaminaBarWidth = 96;
 const StaminaBarHeight = 16;
 
 const testLongStrikeConfig = {
-  name: 'test strike',
+  name: 'high initiate',
   state: PlayerState.STRIKE,
   speed: 1000,
   decayTime: 90,
@@ -14,7 +14,7 @@ const testLongStrikeConfig = {
 };
 
 const testSmallStrikeConfig = {
-  name: 'test small strike',
+  name: 'small initiate',
   state: PlayerState.STRIKE,
   speed: 1000,
   decayTime: 30,
@@ -26,7 +26,7 @@ const testSmallStrikeConfig = {
 };
 
 const testMediumStrikeConfig = {
-  name: 'test medium strike',
+  name: 'mid initiate',
   state: PlayerState.STRIKE,
   speed: 1000,
   decayTime: 50,
@@ -38,7 +38,7 @@ const testMediumStrikeConfig = {
 };
 
 const testBackstepConfig = {
-  name: 'backstep',
+  name: 'small backstep',
   state: PlayerState.BACKSTEP,
   speed: -600,
   decayTime: 100,
@@ -199,6 +199,14 @@ const bigBackStepNames = [
   'surreal'
 ];
 
+const deathMessages = [
+  'death',
+  'it ended',
+  'suddenly it all ends',
+  'death is inevitable',
+  'out of chances'
+];
+
 Gameplay.prototype.generateItem = function(rng) {
   var t = rng.frac();
 
@@ -267,15 +275,17 @@ Gameplay.prototype.generateItem = function(rng) {
 
 Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
-  this.levelGenData = { enemies: [], items: [], exit: new Phaser.Point(-1, -1), spawn: new Phaser.Point(-1, -1) };
+  this.levelGenData = { enemies: [], items: [], exit: new Phaser.Point(-1, -1), spawn: new Phaser.Point(-1, -1), deathMessage: '' };
 
   // data drive this later
-  const TEST_SEED = 101;
+  const TEST_SEED = 22;
 
   var rng = new Phaser.RandomDataGenerator([TEST_SEED]);
   noise.seed(rng.realInRange(0, 65536));
 
   var enemySpawnSkew = new Phaser.Matrix();
+
+  this.levelGenData.deathMessage = deathMessages[~~(rng.frac() * deathMessages.length)];
 
   var posScratchPad = new Phaser.Point();
   var translatedScratchPad = new Phaser.Point();
@@ -409,7 +419,7 @@ Gameplay.prototype.initalizeUI = function () {
   this.ui.addChild(this.weaponInfoText);
   jibberize(this.weaponInfoText);
 
-  this.deathText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', 'death is inevitable', 8);
+  this.deathText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', this.levelGenData.deathMessage, 8);
   this.deathText.align = 'center';
   this.deathText.anchor.set(0.5, 0.5);
   this.deathText.visible = false;
