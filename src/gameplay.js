@@ -254,16 +254,16 @@ Gameplay.prototype.generateItem = function(rng) {
         val.windupTime -= 75;
       break;
         case LongDuration:
-        val.duration += 70;
+        val.duration += 90;
       break;
         case FastSpeed:
-        val.speed += 100;
+        val.speed += 110;
       break;
         case LowStaminaCost:
         val.staminaCost -= 0.6;
       break;
         case LongDecay:
-        val.decayTime += 50;
+        val.decayTime += 79;
       break;
         case HiPower:
         val.power++;
@@ -285,6 +285,8 @@ Gameplay.prototype.generateItem = function(rng) {
       val.name = genName(backStepNames, suffixNames, subT, subT2);
     }
   }
+
+  val.swapControls = val.name + '\n\nPress S to overwrite move a\nPress D to overwrite move b\nPress F to overwrite move c'
 
   return val;
 };
@@ -462,7 +464,6 @@ Gameplay.prototype.setCButtonConfig = function(config) {
 };
 
 Gameplay.prototype.update = function() {
-  
   const xDist = (this.levelGenData.exit.x * GameplayTileSize) - this.player.x;
   const xDistSqr = xDist * xDist;
   const yDist = (this.levelGenData.exit.y * GameplayTileSize) - this.player.y;
@@ -488,7 +489,7 @@ Gameplay.prototype.update = function() {
   this.game.physics.arcade.overlap(this.player, this.items, function(player, item) {
     if (player.data.state === PlayerState.NORMAL) {
       this.itemInfoText.visible = true;
-      this.itemInfoText.text = item.data.info.name;
+      this.itemInfoText.text = item.data.info.swapControls;
       this.itemInfoText.position.set((item.data.mesh.position.x * GameplayTileSize) - this.game.camera.x, 32 + (item.data.mesh.position.z * GameplayTileSize) - this.game.camera.y)
 
       
