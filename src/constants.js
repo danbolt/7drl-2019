@@ -22,3 +22,49 @@ const PillarSpacing = 8;
   const upKey = Phaser.KeyCode.UP;
   const leftKey = Phaser.KeyCode.LEFT;
   const rightKey = Phaser.KeyCode.RIGHT;
+
+
+
+var introLines = [
+  {
+    line: 'hey kid...'
+  },
+  {
+    line: 'wake up!',
+    shock: true
+  },
+  {
+    line: 'i know, i know, it\'s a ' + (new Date().toLocaleString(window.navigator.language, {weekday: 'long'}))
+  },
+  {
+    line: 'but get some\n\n!!! responsibilites !!!\n\nfor once okay?'
+  },
+  {
+    line: '...it\'s like im talking to a child...'
+  },
+  {
+    line: 'ever heard of\nthe amulet of yendor?'
+  },
+  {
+    line: '...huh?',
+    shock: true
+  },
+  {
+    line: 'yeah, typical\n\ni figured you\'d be be like that'
+  },
+  {
+    line: '...'
+  },
+  {
+    line: 'i want you to go get\nthat goddamn amulet'
+  },
+  {
+    line: 'dont die though'
+  },
+  {
+    line: '...nerd'
+  },
+  {
+    line: 'you ready?'
+  },
+];

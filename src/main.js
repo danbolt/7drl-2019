@@ -5,6 +5,7 @@ var main = function () {
 	game.state.add('Preload', Preload, false);
   game.state.add('LoadingScreen', LoadingScreen, false);
   game.state.add('SplashScreen', SplashScreen, false);
+  game.state.add('CutSceneScreen', CutSceneScreen, false);
   game.state.add('TitleScreen', TitleScreen, false);
   game.state.add('Gameplay', Gameplay, false);
 

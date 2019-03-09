@@ -56,6 +56,7 @@ LoadingScreen.prototype.preload = function() {
 };
 LoadingScreen.prototype.create = function() {
 };
+
 LoadingScreen.prototype.update = function() {
   if (threeAllAssetsLoaded === true) {
     this.game.state.start('SplashScreen');
@@ -110,6 +111,6 @@ TitleScreen.prototype.create = function() {
   jibberize(titleText, this.game);
 
   this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR).onDown.add( function() {
-    this.game.state.start('Gameplay', true, false, ~~(Math.random() * Number.MAX_SAFE_INTEGER));
+    this.game.state.start('CutSceneScreen', true, false, introLines);
   }, this);
 };
