@@ -38,13 +38,6 @@ var Player = function(game, x, y) {
   this.data.powerValue = 0;
 
   // keyboard input initalization
-  const aButtonKey = Phaser.KeyCode.X;
-  const bButtonKey = Phaser.KeyCode.C;
-  const cButtonKey = Phaser.KeyCode.V;
-  const downKey = Phaser.KeyCode.DOWN;
-  const upKey = Phaser.KeyCode.UP;
-  const leftKey = Phaser.KeyCode.LEFT;
-  const rightKey = Phaser.KeyCode.RIGHT;
   this.data.inputInfo = {
     inputDirection: new Phaser.Point(0, 0),
     aButtonCallback: () => {},

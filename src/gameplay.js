@@ -4,9 +4,9 @@ const StaminaBarHeight = 16;
 const testLongStrikeConfig = {
   name: 'high initiate',
   state: PlayerState.STRIKE,
-  speed: 1000,
+  speed: 600,
   decayTime: 90,
-  duration: 111,
+  duration: 201,
   staminaCost: 0.411,
   windupSpeed: -70,
   windupTime: 500,
@@ -16,7 +16,7 @@ const testLongStrikeConfig = {
 const testSmallStrikeConfig = {
   name: 'small initiate',
   state: PlayerState.STRIKE,
-  speed: 1000,
+  speed: 800,
   decayTime: 30,
   duration: 40,
   staminaCost: 0.2,
@@ -28,7 +28,7 @@ const testSmallStrikeConfig = {
 const testMediumStrikeConfig = {
   name: 'mid initiate',
   state: PlayerState.STRIKE,
-  speed: 1000,
+  speed: 800,
   decayTime: 50,
   duration: 70,
   staminaCost: 0.3,
@@ -361,7 +361,7 @@ Gameplay.prototype.create = function() {
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
-    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player, 5, 600);
+    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player, 5, 940);
     this.enemies.addChild(enemy);
   }, this);
   this.game.physics.enable(this.enemies);
@@ -386,8 +386,8 @@ Gameplay.prototype.create = function() {
   this.initalizeUI();
 
   this.setAButtonConfig(testLongStrikeConfig);
-  this.setBButtonConfig(testSmallStrikeConfig);
-  this.setCButtonConfig(testBackstepConfig);
+  this.setBButtonConfig(testMediumStrikeConfig);
+  this.setCButtonConfig(testSmallStrikeConfig);
   this.refreshWeaponInfoText();
 
   initalizeThreeScene(this);
@@ -482,6 +482,28 @@ Gameplay.prototype.update = function() {
       this.itemInfoText.visible = true;
       this.itemInfoText.text = item.data.info.name;
       this.itemInfoText.position.set((item.data.mesh.position.x * GameplayTileSize) - this.game.camera.x, 32 + (item.data.mesh.position.z * GameplayTileSize) - this.game.camera.y)
+
+      
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.S)) {
+          this.setAButtonConfig(item.data.info);
+          this.refreshWeaponInfoText();
+          item.data.mesh.visible = false;
+          item.data.mesh.matrixAutoUpdate = false;
+          item.kill();
+        } else if (this.game.input.keyboard.isDown(Phaser.KeyCode.D)) {
+          this.setBButtonConfig(item.data.info);
+          this.refreshWeaponInfoText();
+          item.data.mesh.visible = false;
+          item.data.mesh.matrixAutoUpdate = false;
+          item.kill();
+        } else if (this.game.input.keyboard.isDown(Phaser.KeyCode.F)) {
+          this.setCButtonConfig(item.data.info);
+          this.refreshWeaponInfoText();
+          item.data.mesh.visible = false;
+          item.data.mesh.matrixAutoUpdate = false;
+          item.kill();
+        
+      }
     }
   }, undefined, this);
   this.game.physics.arcade.collide(this.enemies, this.foregroundLayer);
