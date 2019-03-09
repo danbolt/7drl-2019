@@ -41,7 +41,8 @@ Preload.prototype.create = function() {
   loadThreeAssets();
   this.game.scale.onSizeChange.dispatch();
 
-  var loadingText = this.game.add.bitmapText(32, 32, 'font', 'loading...', 8);
+  var loadingText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', 'loading...', 8);
+  loadingText.anchor.set(0.5);
 
   this.game.state.start('LoadingScreen', false, false);
 };
@@ -73,12 +74,24 @@ SplashScreen.prototype.create = function() {
   backing.height = this.game.height;
   backing.tint = 0;
 
-  var splashText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', 'splash screen', 8);
+  var splashText = this.game.add.bitmapText(this.game.width * 0.5, -100, 'font', 'http://danbolt.itch.io/', 8);
   splashText.align = 'center';
   splashText.anchor.set(0.5, 0.5);
+  jibberize(splashText, this.game);
 
-  this.game.time.events.add(1000, function () {
-    this.game.state.start('TitleScreen');
+  splashText.children.forEach(function (letter, i) {
+    var t = this.game.add.tween(letter.position);
+    t.to( { y: 200 }, 300, Phaser.Easing.Cubic.In);
+    this.game.time.events.add(200 + (i * 100), function () {
+      t.start();
+    });
+    if (i === (splashText.children.length - 1)) {
+      t.onComplete.add(function () {
+        this.game.time.events.add(1500, function () {
+          this.game.state.start('TitleScreen');
+        }, this);
+      }, this);
+    }
   }, this);
 };
 
@@ -94,11 +107,9 @@ TitleScreen.prototype.create = function() {
   var titleText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.25, 'font', 'title screen', 8);
   titleText.align = 'center';
   titleText.anchor.set(0.5, 0.5);
+  jibberize(titleText, this.game);
 
   this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR).onDown.add( function() {
     this.game.state.start('Gameplay', true, false, ~~(Math.random() * Number.MAX_SAFE_INTEGER));
   }, this);
-};
-TitleScreen.prototype.shutdown = function() {
-  //
 };
