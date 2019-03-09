@@ -109,6 +109,8 @@ Gameplay.prototype.shutdown = function() {
   this.itemInfoText = null;
   this.weaponInfoText = null;
   this.deathText = null;
+
+  this.game.camera.position.set(0, 0);
 };
 
 var itemDistReport = {
@@ -366,7 +368,7 @@ Gameplay.prototype.create = function() {
     this.deathText.visible = true;
 
     this.game.time.events.add(2000, () => {
-      this.game.state.start('Gameplay');
+      this.game.state.start('TitleScreen');
     });
   });
   this.game.camera.follow(this.player);

@@ -457,6 +457,8 @@ var threeAllAssetsLoaded = false;
       scene.remove(scene.children[0]); 
     }
 
+    renderer.clear(true, true, true);
+
     playerInWorld = null;
     wallsInWorld = [];
     floorTiles = [];
