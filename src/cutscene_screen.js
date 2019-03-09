@@ -3,16 +3,19 @@
 
 var CutSceneScreen = function () {
   this.messages = [];
+  this.nextState = 'TitleScreen';
 };
 
 CutSceneScreen.prototype.shutdown = function () {
   this.messages = [];
+  this.nextState = 'TitleScreen';
 };
-CutSceneScreen.prototype.init = function (messages) {
+CutSceneScreen.prototype.init = function (messages, nextState) {
   this.messages = messages;
+  this.nextState = nextState;
 };
 CutSceneScreen.prototype.startGame = function(seed) {
-  this.game.state.start('Gameplay', true, false, seed);
+  this.game.state.start(this.nextState, true, false, seed);
 }
 CutSceneScreen.prototype.create = function () {
   var backing = this.game.add.sprite(0, 0, this.game.cache.getBitmapData('onePx'));
@@ -48,6 +51,7 @@ CutSceneScreen.prototype.create = function () {
 
   var messageCounter = 0;
   var playLine = () => {
+    titleText.text = this.messages[messageCounter].line;
     if (this.messages[messageCounter].shock) {
       const shockTime = 500;
       var shockTweenScale = this.game.add.tween(titleText.scale);
@@ -58,7 +62,11 @@ CutSceneScreen.prototype.create = function () {
       shockTweenRotation.to({ rotation: [Math.PI * -0.25, Math.PI * 0.25, Math.PI * -0.25, Math.PI * 0.25, Math.PI * -0.25, Math.PI * 0.25, Math.PI * -0.25, Math.PI * 0.25, 0] }, shockTime, Phaser.Easing.Linear.None );
       shockTweenRotation.start();
     }
-    titleText.text = this.messages[messageCounter].line;
+    if (this.messages[messageCounter].tint) {
+      titleText.tint = this.messages[messageCounter].tint;
+    } else {
+      titleText.tint = 0xFFFFFF;
+    }
     titleText.children.forEach((child, i, arr) => {
       const delay = i * textBipDelay;
       this.game.time.events.add(delay, function () {

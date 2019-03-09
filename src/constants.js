@@ -68,3 +68,46 @@ var introLines = [
     line: 'you ready?'
   },
 ];
+
+var winLines = [
+  {
+    line: 'holy crap!!!!',
+    shock: true
+  },
+  {
+    line: 'you actually got the amulet!!!',
+    shock: true
+  },
+  {
+    line: '...wow'
+  },
+  {
+    line: 'that\'s too crazy\n\ni totally thought you were\ngoing to die'
+  },
+  {
+    line: '...'
+  },
+  {
+    line: 'anyway, well done'
+  },
+  {
+    line: 'you\'re free to go\n\ni\'ll probably, uh...'
+  },
+  {
+    line: '...put this amulet on the altar'
+  },
+  {
+    line: 'you cool with that moloch?'
+  },
+  {
+    line: '...yeah, no prob...',
+    tint: 0xFF0000,
+    shock: true
+  },
+  {
+    line: 'cool.'
+  },
+  {
+    line: 'congrats for winning the game!'
+  }
+];

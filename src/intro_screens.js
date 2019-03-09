@@ -111,6 +111,7 @@ TitleScreen.prototype.create = function() {
   jibberize(titleText, this.game);
 
   this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR).onDown.add( function() {
-    this.game.state.start('CutSceneScreen', true, false, introLines);
+    this.game.state.start('CutSceneScreen', true, false, introLines, 'Gameplay');
+    //this.game.state.start('CutSceneScreen', true, false, winLines, 'TitleScreen');
   }, this);
 };
