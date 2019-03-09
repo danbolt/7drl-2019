@@ -1,4 +1,7 @@
-var BasicEnemy = function (game, x, y, player, health, beDeadTime) {
+
+const DefaultMoveSpeed = 50;
+
+var BasicEnemy = function (game, x, y, player, health, beDeadTime, config) {
   Phaser.Sprite.call(this, game, x, y, 'test_sheet', 7);
   this.game.add.existing(this);
 
@@ -47,11 +50,13 @@ var BasicEnemy = function (game, x, y, player, health, beDeadTime) {
   }, this);
 
   this.data.player = player;
-  this.data.moveSpeed = 50;
+  this.data.moveSpeed = DefaultMoveSpeed;
   this.data.playerMinSightRange = 256;
   this.data.playerMinSightRangeSquared = (this.data.playerMinRange * this.data.playerMinRange);
   this.data.reviveOnNextFrame = false;
   this.data.enemyHealth = health;
+  this.data.config = config;
+  this.data.strikeAble = true;
 
   this.renderable = false;
 };
@@ -67,12 +72,28 @@ BasicEnemy.prototype.update = function() {
     }
   }
 
-  if (this.position.distance(this.data.player.position) <= this.data.playerMinSightRange) {
-    var theta = Math.atan2(this.data.player.position.y - this.position.y, this.data.player.position.x - this.position.x);
-    this.body.velocity.set(Math.cos(theta) * this.data.moveSpeed, Math.sin(theta) * this.data.moveSpeed)
-    this.rotation = theta;
+  var withinPlayerRange = this.position.distance(this.data.player.position) <= this.data.playerMinSightRange;
+  if (withinPlayerRange) {
+      var theta = Math.atan2(this.data.player.position.y - this.position.y, this.data.player.position.x - this.position.x);
+      this.body.velocity.set(Math.cos(theta) * this.data.moveSpeed, Math.sin(theta) * this.data.moveSpeed)
+      this.rotation = theta;
   } else {
     this.body.velocity.set(0, 0);
+  }
+
+  if (withinPlayerRange && (this.data.config.striker === true) && (this.data.strikeAble === true)) {
+    this.data.strikeAble = false;
+
+    this.data.moveSpeed = -50;
+    this.game.time.events.add(300, () => {
+      this.data.moveSpeed = this.data.config.strikeSpeed;
+      this.game.time.events.add(this.data.config.strikeTime, () => {
+        this.data.moveSpeed = DefaultMoveSpeed;
+        this.game.time.events.add(500, () => {
+          this.data.strikeAble = true;
+        });
+      });
+    });
   }
 
   if (this.data.mesh) {

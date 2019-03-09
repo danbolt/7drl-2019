@@ -347,8 +347,8 @@ Gameplay.prototype.preload = function () {
           }
 
           if (valueAt < -0.899) {
-            if (clearFromBothSpawnAndExit) {
-              this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x });
+            if (clearFromBothSpawnAndExit && (rng.frac() > 0.5)) {
+              this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x, config: { striker: true, strikeTime: 200, strikeSpeed: 400} });
             }
           }
         }
@@ -378,7 +378,7 @@ Gameplay.prototype.create = function() {
 
   this.enemies = this.game.add.group(undefined, 'enemies');
   this.levelGenData.enemies.forEach(function (enemyData) {
-    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player, 5, 940);
+    var enemy = new BasicEnemy(this.game, enemyData.x * GameplayTileSize, enemyData.y * GameplayTileSize, this.player, 5, 940, enemyData.config);
     this.enemies.addChild(enemy);
   }, this);
   this.game.physics.enable(this.enemies);
@@ -453,14 +453,32 @@ Gameplay.prototype.refreshWeaponInfoText = function() {
 Gameplay.prototype.setAButtonConfig = function(config) {
   this.player.setAButtonConfig(config);
   this.aButtonItem = config;
+
+  if (this.player.data.mesh) {
+    var t = this.game.add.tween(this.player.data.mesh.scale);
+    t.to( { y: [1.3, this.player.data.mesh.scale.y] }, 500, Phaser.Easing.Cubic.InOut);
+    t.start();
+  }
 };
 Gameplay.prototype.setBButtonConfig = function(config) {
   this.player.setBButtonConfig(config);
   this.bButtonItem = config;
+
+  if (this.player.data.mesh) {
+    var t = this.game.add.tween(this.player.data.mesh.scale);
+    t.to( { y: [1.3, this.player.data.mesh.scale.y] }, 500, Phaser.Easing.Cubic.InOut);
+    t.start();
+  }
 };
 Gameplay.prototype.setCButtonConfig = function(config) {
   this.player.setCButtonConfig(config);
   this.cButtonItem = config;
+
+  if (this.player.data.mesh) {
+    var t = this.game.add.tween(this.player.data.mesh.scale);
+    t.to( { y: [1.3, this.player.data.mesh.scale.y] }, 500, Phaser.Easing.Cubic.InOut);
+    t.start();
+  }
 };
 
 Gameplay.prototype.update = function() {
