@@ -10,7 +10,7 @@ const testLongStrikeConfig = {
   staminaCost: 0.411,
   windupSpeed: -40,
   windupTime: 920,
-  power: 7
+  power: 5
 };
 
 const testSmallStrikeConfig = {
@@ -76,6 +76,7 @@ var Gameplay = function () {
   this.map = null;
   this.foregroundLayer = null;
 
+  this.seed = '';
   this.levelGenData = { enemies: [], items: [], exit: new Phaser.Point(-1, -1), spawn: new Phaser.Point(-1, -1) };
 
   this.ui = null;
@@ -99,6 +100,7 @@ Gameplay.prototype.shutdown = function() {
   this.map = null;
   this.foregroundLayer = null;
 
+  this.seed = '';
   this.levelGenData = { enemies: [], items: [], exit: new Phaser.Point(-1, -1), spawn: new Phaser.Point(-1, -1) };
 
   this.ui = null;
@@ -264,10 +266,9 @@ Gameplay.prototype.generateItem = function(rng) {
         case HiPower:
         val.power++;
         val.windupTime += rng.realInRange(60, 88);
+        val.name = 'enraged ' + val.name;
       break;
     }
-
-      console.log(val);
   } else {
     val.state = PlayerState.BACKSTEP;
     var scaledT = rng.frac();
@@ -285,15 +286,14 @@ Gameplay.prototype.generateItem = function(rng) {
 
   return val;
 };
-
+Gameplay.prototype.init = function(seed) {
+  this.seed = seed;
+};
 Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
   this.levelGenData = { enemies: [], items: [], exit: new Phaser.Point(-1, -1), spawn: new Phaser.Point(-1, -1), deathMessage: '' };
 
-  // data drive this later
-  const TEST_SEED = 22;
-
-  var rng = new Phaser.RandomDataGenerator([TEST_SEED]);
+  var rng = new Phaser.RandomDataGenerator([this.seed]);
   noise.seed(rng.realInRange(0, 65536));
 
   var enemySpawnSkew = new Phaser.Matrix();
@@ -342,7 +342,7 @@ Gameplay.prototype.preload = function () {
             this.levelGenData.items.push(newItem);
           }
 
-          if (valueAt < -0.8) {
+          if (valueAt < -0.899) {
             if (clearFromBothSpawnAndExit) {
               this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x });
             }

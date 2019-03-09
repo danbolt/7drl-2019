@@ -44,7 +44,7 @@ Preload.prototype.create = function() {
 
 Preload.prototype.update = function() {
   if (threeAllAssetsLoaded === true) {
-    this.game.state.start('Gameplay');
+    this.game.state.start('Gameplay', true, false, ~~(Math.random() * Number.MAX_SAFE_INTEGER));
   }
 }
 

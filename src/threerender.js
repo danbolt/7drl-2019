@@ -394,10 +394,10 @@ var threeAllAssetsLoaded = false;
     enemyMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
     enemyMaterial.needsUpdate = true;
     floorMaterial.uniforms.time.value += gameplayState.game.time.elapsed;
-    floorMaterial.uniforms.ambianceColor.value.set(0.1 * (Math.sin(gameplayState.game.time.now * 0.01) * 0.5 + 0.5), 0, 0);
+    floorMaterial.uniforms.ambianceColor.value.set(0.2 * (Math.sin(gameplayState.game.time.now * 0.01) * 0.5 + 0.5), 0, 0);
     floorMaterial.needsUpdate = true;
     floorMaterial2.uniforms.time.value += gameplayState.game.time.elapsed;
-    floorMaterial2.uniforms.ambianceColor.value.set(0.1 * (Math.sin(gameplayState.game.time.now * 0.01 + 2) * 0.5 + 0.5), 0, 0);
+    floorMaterial2.uniforms.ambianceColor.value.set(0, 0, 0.2 * (Math.sin(gameplayState.game.time.now * 0.01 + 4) * 0.5 + 0.5));
     floorMaterial2.needsUpdate = true;
 
     if (gameplayState.player.data.moveDirection.getMagnitudeSq() > Epsilon) {
