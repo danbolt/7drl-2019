@@ -2,19 +2,19 @@ const StaminaBarWidth = 96;
 const StaminaBarHeight = 16;
 
 const testLongStrikeConfig = {
-  name: 'high initiate',
+  name: 'heavy strike',
   state: PlayerState.STRIKE,
   speed: 600,
   decayTime: 90,
   duration: 201,
   staminaCost: 0.411,
-  windupSpeed: -70,
-  windupTime: 500,
+  windupSpeed: -40,
+  windupTime: 920,
   power: 7
 };
 
 const testSmallStrikeConfig = {
-  name: 'small initiate',
+  name: 'small strike',
   state: PlayerState.STRIKE,
   speed: 800,
   decayTime: 30,
@@ -26,13 +26,13 @@ const testSmallStrikeConfig = {
 };
 
 const testMediumStrikeConfig = {
-  name: 'mid initiate',
+  name: 'mid strike',
   state: PlayerState.STRIKE,
   speed: 800,
   decayTime: 50,
   duration: 70,
   staminaCost: 0.3,
-  windupSpeed: -70,
+  windupSpeed: -55,
   windupTime: 250,
   power: 3
 };
@@ -207,21 +207,18 @@ const deathMessages = [
   'out of chances'
 ];
 
+
+const ShortWindup = 0;
+const LongDuration = 1;
+const FastSpeed = 2;
+const LowStaminaCost = 3; 
+const LongDecay = 4;
+const HiPower = 5;
+
 Gameplay.prototype.generateItem = function(rng) {
   var t = rng.frac();
 
   var val = {
-    name: t,
-    x: -1,
-    y: -1,
-    state: PlayerState.NORMAL,
-    speed: 0,
-    decayTime: 0,
-    duration: 0,
-    staminaCost: 1.0,
-    windupSpeed: 0,
-    windupTime: 0,
-    power: 0
   };
 
   var genName = function (first, second, t, t2) {
@@ -235,13 +232,6 @@ Gameplay.prototype.generateItem = function(rng) {
     const scaledT = rng.frac();
     const subT = rng.frac();
     const subT2 = rng.frac();
-
-    const ShortWindup = 0;
-    const LongDuration = 1;
-    const FastSpeed = 2;
-    const LowStaminaCost = 3; 
-    const LongDecay = 4;
-    const HiPower = 5;
     const bonusValue = rng.integerInRange(ShortWindup, HiPower);
 
     if (scaledT < 0.333) {
@@ -253,8 +243,31 @@ Gameplay.prototype.generateItem = function(rng) {
     } else {
       Object.assign(val, testMediumStrikeConfig);
       val.name = genName(midStrikeNames, suffixNames, (subT + (bonusValue / 6.0)) / 2.0, subT2);
-      //
     }
+
+    switch (bonusValue) {
+        case ShortWindup:
+        val.windupTime -= 75;
+      break;
+        case LongDuration:
+        val.duration += 70;
+      break;
+        case FastSpeed:
+        val.speed += 100;
+      break;
+        case LowStaminaCost:
+        val.staminaCost -= 0.6;
+      break;
+        case LongDecay:
+        val.decayTime += 50;
+      break;
+        case HiPower:
+        val.power++;
+        val.windupTime += rng.realInRange(60, 88);
+      break;
+    }
+
+      console.log(val);
   } else {
     val.state = PlayerState.BACKSTEP;
     var scaledT = rng.frac();
