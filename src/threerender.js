@@ -37,6 +37,12 @@ var threeAllAssetsLoaded = false;
       color: 0x0000ff,
       linewidth: 3
     });
+  var worldLineEtching = new THREE.LineDashedMaterial({
+      color: 0x002255,
+      linewidth: 0.3,
+      dashSize: 0.3,
+      gapSize: 0.3
+    });
 
   var modelsToLoad = [
     'player_test'
@@ -436,12 +442,32 @@ var threeAllAssetsLoaded = false;
     playerMesh.scale.set(0.7, 0.7, 0.7);
     gameplayState.player.data.mesh = playerMesh;
 
-    playerLineGroup = new THREE.Group();
     var lineGeometry = new THREE.Geometry();
     lineGeometry.vertices.push(
       new THREE.Vector3( 0, 0, 0 ),
       new THREE.Vector3( 0, 0, 1 )
     );
+
+    xLines = [];
+    for (var i = 0; i < 5; i++) {
+      var l =  new THREE.Line(lineGeometry, worldLineEtching);
+      l.scale.set(1, 1, 2 + (Math.random() * 4.3));
+      l.position.y = ~~(Math.random() * 20) - 10;
+      scene.add(l);
+      xLines.push(l);
+    }
+
+    yLines = [];
+    for (var i = 0; i < 5; i++) {
+      var l =  new THREE.Line(lineGeometry, worldLineEtching);
+      l.scale.set(1, 1, 2 + (Math.random() * 4.3));
+      l.position.y = ~~(Math.random() * 20) - 10;
+      l.rotation.y = Math.PI * 0.5;
+      scene.add(l);
+      yLines.push(l);
+    }
+
+    playerLineGroup = new THREE.Group();
     for (var i = 0; i < 12; i++) {
       var l =  new THREE.Line(lineGeometry, lineMaterial);
       l.scale.set(1.0, 1.0, 1.0);
@@ -647,6 +673,25 @@ var threeAllAssetsLoaded = false;
 
     camera.position.x = lerp(camera.position.x, targetX, 0.25);
     camera.position.z = lerp(camera.position.z, targetZ, 0.25);
+
+    xLines.forEach((xLine, i, arr) => {
+      xLine.position.set(xLine.position.x, xLine.position.y, xLine.position.z + gameplayState.game.time.elapsed * (0.08 + (0.0001 * i)));
+
+      if ((xLine.position.z - camera.position.z) > 10) {
+        xLine.position.x = ~~(playerInWorld.position.x + (Math.random() * 14) - 7);
+        xLine.position.z = camera.position.z - 10 - Math.random() * 20;
+        xLine.position.y = ~~(Math.random() * 20) - 10;
+      }
+    });
+    yLines.forEach((yLine, i, arr) => {
+      yLine.position.set(yLine.position.x + gameplayState.game.time.elapsed * (0.08 + (0.0001 * i)), yLine.position.y, yLine.position.z);
+
+      if ((yLine.position.x - camera.position.x) > 10) {
+        yLine.position.x = camera.position.x - 10 - Math.random() * 20;
+        yLine.position.y = ~~(Math.random() * 30) - 15;
+        yLine.position.z = ~~(playerInWorld.position.z + (Math.random() * 14) - 7);
+      }
+    });
 
     camera.lookAt(playerInWorld.position.x, 0, playerInWorld.position.z);
   };

@@ -190,7 +190,7 @@ TitleScreen.prototype.create = function() {
 
       gl_FragColor = texture2D(uSampler, fragColorPSlot);
 
-      if (gl_FragColor.w < 0.97) {
+      if (gl_FragColor.w < 1.0) {
         gl_FragColor = vec4(gl_FragColor.xyz, 0.0);
       }
     }
