@@ -109,9 +109,9 @@ LoadingScreen.prototype.create = function() {
 
 LoadingScreen.prototype.update = function() {
   if (threeAllAssetsLoaded === true) {
-    this.game.state.start('SplashScreen');
+    //this.game.state.start('SplashScreen');
     
-    //this.game.state.start('Gameplay', true, false, 405050);
+    this.game.state.start('Gameplay', true, false, 405050);
   }
 }
 LoadingScreen.prototype.shutdown = function() {

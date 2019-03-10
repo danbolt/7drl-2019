@@ -17,8 +17,19 @@ var BasicEnemy = function (game, x, y, player, health, beDeadTime, config) {
     }
     if (this.data.enemyHealth > 0) {
       sfx['enemy_temp_death'].play();
-      this.game.time.events.add(deadTime, function () {
+      this.game.time.events.add(deadTime + 200, function () {
         this.data.reviveOnNextFrame = true;
+
+        if (this.data.resetStrikeTween !== null) {
+          this.game.time.events.remove(this.data.resetStrikeTween);
+          this.data.resetStrikeTween = null;
+          this.data.strikeAble = false;
+
+          this.data.resetStrikeTween = this.game.time.events.add(500, () => {
+            this.data.strikeAble = true;
+            this.data.resetStrikeTween = null;
+          });
+        }
       }, this);
 
       for (var i = 0; i < this.data.enemyHealth; i++) {
@@ -62,6 +73,7 @@ var BasicEnemy = function (game, x, y, player, health, beDeadTime, config) {
   this.data.config = config;
   this.data.strikeAble = true;
   this.data.strikeTween = null;
+  this.data.resetStrikeTween = null;
 
   this.renderable = false;
 };
@@ -100,12 +112,13 @@ BasicEnemy.prototype.update = function() {
       this.data.strikeTween.start();
     }
 
-    this.game.time.events.add(300, () => {
+    this.data.resetStrikeTween = this.game.time.events.add(300, () => {
       this.data.moveSpeed = this.data.config.strikeSpeed;
       this.game.time.events.add(this.data.config.strikeTime, () => {
         this.data.moveSpeed = DefaultMoveSpeed;
-        this.game.time.events.add(500, () => {
+        this.data.resetStrikeTween = this.game.time.events.add(500, () => {
           this.data.strikeAble = true;
+          this.data.resetStrikeTween = null;
         });
       });
     });
