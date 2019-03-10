@@ -1,3 +1,9 @@
+
+const clipsToLoad = [
+  'talk_1',
+  'talk_m'
+];
+
 var Preload = function () {
   //
 };
@@ -53,15 +59,22 @@ var LoadingScreen = function() {
 LoadingScreen.prototype.preload = function() {
   this.game.load.spritesheet('test_sheet', 'asset/image/test.png', 32, 32);
   this.game.load.image('test_sheet_sprite', 'asset/image/test.png');
+
+  clipsToLoad.forEach((clipName) => {
+    this.game.load.audio(clipName, 'asset/sfx/' + clipName + '.wav');
+  });
 };
 LoadingScreen.prototype.create = function() {
+  clipsToLoad.forEach((clipName) => {
+    sfx[clipName] = this.game.add.audio(clipName);
+  });
 };
 
 LoadingScreen.prototype.update = function() {
   if (threeAllAssetsLoaded === true) {
-    //this.game.state.start('SplashScreen');
+    this.game.state.start('SplashScreen');
     
-    this.game.state.start('Gameplay', true, false, 405050);
+    //this.game.state.start('Gameplay', true, false, 405050);
   }
 }
 LoadingScreen.prototype.shutdown = function() {

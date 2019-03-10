@@ -51,6 +51,8 @@ CutSceneScreen.prototype.create = function () {
 
   var messageCounter = 0;
   var playLine = () => {
+    let volume = 0.4;
+
     titleText.text = this.messages[messageCounter].line;
     if (this.messages[messageCounter].shock) {
       const shockTime = 500;
@@ -61,16 +63,23 @@ CutSceneScreen.prototype.create = function () {
       var shockTweenRotation = this.game.add.tween(titleText);
       shockTweenRotation.to({ rotation: [Math.PI * -0.25, Math.PI * 0.25, Math.PI * -0.25, Math.PI * 0.25, Math.PI * -0.25, Math.PI * 0.25, Math.PI * -0.25, Math.PI * 0.25, 0] }, shockTime, Phaser.Easing.Linear.None );
       shockTweenRotation.start();
+      volume = 0.89;
     }
     if (this.messages[messageCounter].tint) {
       titleText.tint = this.messages[messageCounter].tint;
     } else {
       titleText.tint = 0xFFFFFF;
     }
+    let talkSound = 'talk_1';
+    if (this.messages[messageCounter].altSound) {
+      talkSound = this.messages[messageCounter].altSound;
+    }
+
     titleText.children.forEach((child, i, arr) => {
       const delay = i * textBipDelay;
       this.game.time.events.add(delay, function () {
         child.visible = true;
+        sfx[talkSound].play(undefined, undefined, volume);
       });
 
       if (i === (arr.length - 1)) {
