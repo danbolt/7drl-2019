@@ -43,6 +43,7 @@ var threeAllAssetsLoaded = false;
       dashSize: 0.3,
       gapSize: 0.3
     });
+  worldLineEtching.fog = false;
 
   var modelsToLoad = [
     'player_test'

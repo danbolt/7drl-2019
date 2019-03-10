@@ -359,6 +359,10 @@ Gameplay.prototype.preload = function () {
 
           if (valueAt < -0.8) {
             if (clearFromBothSpawnAndExit && (rng.frac() > 0.5)) {
+              // push regular enemy
+              //this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x, config: { moveSpeed: 76 } });
+
+              // push striker enemy
               this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x, config: { striker: true, strikeTime: 200, strikeSpeed: 400} });
             }
           }
@@ -552,7 +556,6 @@ Gameplay.prototype.update = function() {
 
       tBottom.onComplete.add(() => {
         this.game.state.start('IntermitentScreen', true, false, 'Gameplay');
-        //this.game.state.start('Gameplay');
       });
     }
     return;

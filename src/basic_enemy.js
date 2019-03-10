@@ -65,7 +65,8 @@ var BasicEnemy = function (game, x, y, player, health, beDeadTime, config) {
   }, this);
 
   this.data.player = player;
-  this.data.moveSpeed = DefaultMoveSpeed;
+  this.data.realMoveSpeed = config.moveSpeed ? config.moveSpeed : DefaultMoveSpeed;
+  this.data.moveSpeed = this.data.realMoveSpeed;
   this.data.playerMinSightRange = 256;
   this.data.playerMinSightRangeSquared = (this.data.playerMinRange * this.data.playerMinRange);
   this.data.reviveOnNextFrame = false;
@@ -115,7 +116,7 @@ BasicEnemy.prototype.update = function() {
     this.data.resetStrikeTween = this.game.time.events.add(300, () => {
       this.data.moveSpeed = this.data.config.strikeSpeed;
       this.game.time.events.add(this.data.config.strikeTime, () => {
-        this.data.moveSpeed = DefaultMoveSpeed;
+        this.data.moveSpeed = this.data.realMoveSpeed;
         this.data.resetStrikeTween = this.game.time.events.add(500, () => {
           this.data.strikeAble = true;
           this.data.resetStrikeTween = null;
