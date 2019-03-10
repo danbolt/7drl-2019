@@ -26,12 +26,17 @@ var threeAllAssetsLoaded = false;
   var wallsInWorld = [];
   var needUpdateWalls = true;
   var floorTiles = [];
+  var playerLineGroup = [];
 
   var testMaterial = undefined;
   var playerMaterial = undefined;
   var wallMaterial = undefined;
   var enemyMaterial = undefined;
   var strikerMaterial = undefined;
+  var lineMaterial = new THREE.LineBasicMaterial({
+      color: 0x0000ff,
+      linewidth: 3
+    });
 
   var modelsToLoad = [
     'player_test'
@@ -431,6 +436,22 @@ var threeAllAssetsLoaded = false;
     playerMesh.scale.set(0.7, 0.7, 0.7);
     gameplayState.player.data.mesh = playerMesh;
 
+    playerLineGroup = new THREE.Group();
+    var lineGeometry = new THREE.Geometry();
+    lineGeometry.vertices.push(
+      new THREE.Vector3( 0, 0, 0 ),
+      new THREE.Vector3( 0, 0, 1 )
+    );
+    for (var i = 0; i < 12; i++) {
+      var l =  new THREE.Line(lineGeometry, lineMaterial);
+      l.scale.set(1.0, 1.0, 1.0);
+      l.position.set(Math.cos(i / 12 * Math.PI * 2), Math.sin(i / 12 * Math.PI * 2), 0,);
+      l.lookAt(0, 0, 3);
+      playerLineGroup.add(l);
+    }
+    playerLineGroup.visible = false;
+    scene.add(playerLineGroup);
+
     playerAnimations = {};
     playerAnimationMixer = new THREE.AnimationMixer(playerMesh);
     var idleClip = THREE.AnimationClip.findByName(animationsMap['player_test'], "Idle");
@@ -583,6 +604,25 @@ var threeAllAssetsLoaded = false;
     playerInWorld.position.y = 0;
     playerInWorld.position.z = (gameplayState.player.y - gameplayState.player.height * 0.5) * WorldScale;
     playerInWorld.rotation.y = (gameplayState.player.rotation - (Math.PI * 0.5)) * -1;
+
+    playerLineGroup.position.set(playerInWorld.position.x, playerInWorld.position.y, playerInWorld.position.z);
+    playerLineGroup.rotation.set(0, playerInWorld.rotation.y, playerLineGroup.rotation.z = gameplayState.game.time.now / 340);
+    if (gameplayState.player.data.state === PlayerState.STRIKE) {
+      playerLineGroup.visible = true;
+
+      if (gameplayState.player.data.configName === 'heavy strike') {
+        lineMaterial.color.set(0xFF0000);
+        lineMaterial.needsUpdate = true;
+      } else if (gameplayState.player.data.configName === 'mid strike') {
+        lineMaterial.color.set(0x00FF00);
+        lineMaterial.needsUpdate = true;
+      } else if (gameplayState.player.data.configName === 'small strike') {
+        lineMaterial.color.set(0x00aaFF);
+        lineMaterial.needsUpdate = true;
+      }
+    } else {
+      playerLineGroup.visible = false;
+    }
     
     var targetX = (gameplayState.game.camera.x + (gameplayState.game.width * 0.5)) *  WorldScale;
     var targetZ = (gameplayState.game.camera.y + (gameplayState.game.height * 0.5)) * WorldScale + 3;

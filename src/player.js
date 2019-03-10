@@ -132,6 +132,7 @@ Player.prototype.generateStrikeStepCallbackFromConfig = function(config) {
 
       var performAction = () => {
         this.data.powerValue = power;
+        this.data.configName = config.name;
         this.data.stamina -= cost;
         this.data.state = newState;
         this.data.moveSpeed = newSpeed;
