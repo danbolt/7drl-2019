@@ -16,6 +16,7 @@ var BasicEnemy = function (game, x, y, player, health, beDeadTime, config) {
       this.data.mesh.visible = false;
     }
     if (this.data.enemyHealth > 0) {
+      sfx['enemy_temp_death'].play();
       this.game.time.events.add(deadTime, function () {
         this.data.reviveOnNextFrame = true;
       }, this);
@@ -40,6 +41,9 @@ var BasicEnemy = function (game, x, y, player, health, beDeadTime, config) {
         ts.to({x: [0.3, this.data.enemyHealth / health], y: [0.3, this.data.enemyHealth / health], z: [0.3, this.data.enemyHealth / health]}, deadTime, Phaser.Easing.Cubic.InOut);
         ts.start();
       }
+    } else {
+
+      sfx['enemy_true_death_0'].play();
     }
   }, this);
   this.events.onRevived.add(function () {

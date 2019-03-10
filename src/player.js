@@ -23,6 +23,19 @@ const PlayerBurstSpeed = 270.0;
 const PlayerBurstDecayTime = 230;
 const PlayerStaminaReplenishRate = 0.00025;
 
+const stepSFXMappings = {
+  'small': ['small_strike_0', 'small_strike_1', 'small_strike_2'],
+  'mid': ['mid_strike_0', 'mid_strike_1', 'mid_strike_2'],
+  'heavy': ['heavy_strike_0', 'heavy_strike_1', 'heavy_strike_2'],
+  'backstep': ['backstep_0', 'backstep_1', 'backstep_2'],
+  'big_backstep': ['big_backstep_0'],
+  'windup': ['windup_0', 'windup_1']
+};
+var getRandoWeaponSound = function(weaponType) {
+  var arr = stepSFXMappings[weaponType];
+  return arr[~~(Math.random() * arr.length)];
+};
+
 var Player = function(game, x, y) {
   Phaser.Sprite.call(this, game, x, y, 'test_sheet', 17);
   this.game.add.existing(this);
@@ -129,6 +142,8 @@ Player.prototype.generateStrikeStepCallbackFromConfig = function(config) {
           this.data.powerValue = 0;
         });
         this.data.movementTween.start();
+
+        sfx[getRandoWeaponSound(config.type)].play(undefined, undefined, 0.8);
       };
 
       this.data.prevMoveDirection.x = this.data.moveDirection.x;
@@ -139,6 +154,7 @@ Player.prototype.generateStrikeStepCallbackFromConfig = function(config) {
       if ((windupTime !== undefined) && (windupSpeed !== undefined)) {
         this.data.state = PlayerState.WINDUP;
         this.data.moveSpeed = windupSpeed;
+        sfx[getRandoWeaponSound('windup')].play();
         this.game.time.events.add(windupTime, function () {
           performAction();
         }, this);

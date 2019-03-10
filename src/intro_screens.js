@@ -1,7 +1,37 @@
 
 const clipsToLoad = [
+  'backstep_0',
+  'backstep_1',
+  'backstep_2',
+  'big_backstep_0',
+  'death',
+  'end_level',
+  'enemy_respawn',
+  'enemy_temp_death',
+  'enemy_true_death_0',
+  'enemy_true_death_1',
+  'enraged_0',
+  'enraged_1',
+  'enter',
+  'heavy_strike_0',
+  'heavy_strike_1',
+  'heavy_strike_2',
+  'level_start_0',
+  'level_start_1',
+  'level_start_2',
+  'mid_strike_0',
+  'mid_strike_1',
+  'mid_strike_2',
+  'small_strike_0',
+  'small_strike_1',
+  'small_strike_2',
+  'swap_a',
+  'swap_b',
+  'swap_c',
   'talk_1',
-  'talk_m'
+  'talk_m',
+  'windup_0',
+  'windup_1'
 ];
 
 var Preload = function () {
@@ -72,9 +102,9 @@ LoadingScreen.prototype.create = function() {
 
 LoadingScreen.prototype.update = function() {
   if (threeAllAssetsLoaded === true) {
-    this.game.state.start('SplashScreen');
+    //this.game.state.start('SplashScreen');
     
-    //this.game.state.start('Gameplay', true, false, 405050);
+    this.game.state.start('Gameplay', true, false, 405050);
   }
 }
 LoadingScreen.prototype.shutdown = function() {
@@ -103,6 +133,7 @@ SplashScreen.prototype.create = function() {
     });
     if (i === (splashText.children.length - 1)) {
       t.onComplete.add(function () {
+        sfx['enter'].play(undefined, undefined, 0.4);
         this.game.time.events.add(1500, function () {
           this.game.state.start('TitleScreen');
         }, this);

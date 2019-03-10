@@ -10,7 +10,8 @@ const testLongStrikeConfig = {
   staminaCost: 0.411,
   windupSpeed: -40,
   windupTime: 920,
-  power: 5
+  power: 5,
+  type: 'heavy'
 };
 
 const testSmallStrikeConfig = {
@@ -22,7 +23,8 @@ const testSmallStrikeConfig = {
   staminaCost: 0.2,
   windupSpeed: -70,
   windupTime: 100,
-  power: 2
+  power: 2,
+  type: 'small'
 };
 
 const testMediumStrikeConfig = {
@@ -34,7 +36,8 @@ const testMediumStrikeConfig = {
   staminaCost: 0.3,
   windupSpeed: -55,
   windupTime: 250,
-  power: 3
+  power: 3,
+  type: 'mid'
 };
 
 const testBackstepConfig = {
@@ -46,7 +49,8 @@ const testBackstepConfig = {
   staminaCost: 0.19,
   windupSpeed: undefined,
   windupTime: undefined,
-  power: undefined
+  power: undefined,
+  type: 'backstep'
 };
 
 const testBigBackstepConfig = {
@@ -58,7 +62,8 @@ const testBigBackstepConfig = {
   staminaCost: 0.4,
   windupSpeed: undefined,
   windupTime: undefined,
-  power: undefined
+  power: undefined,
+  type: 'big_backstep'
 };
 
 // randomize me later
@@ -363,6 +368,8 @@ Gameplay.prototype.preload = function () {
 
   this.game.cache.addTilemap('gen_map', null, mapCsv, Phaser.Tilemap.CSV);
 }
+
+const levelStartSounds = ['level_start_0', 'level_start_1'];
 Gameplay.prototype.create = function() {
   this.player = new Player(this.game, this.levelGenData.spawn.x * GameplayTileSize, this.levelGenData.spawn.y * GameplayTileSize);
   this.player.renderable = false;
@@ -406,6 +413,8 @@ Gameplay.prototype.create = function() {
   this.setBButtonConfig(testMediumStrikeConfig);
   this.setCButtonConfig(testSmallStrikeConfig);
   this.refreshWeaponInfoText();
+
+  sfx[levelStartSounds[~~(Math.random() * levelStartSounds.length)]].play();
 
   initalizeThreeScene(this);
 };
