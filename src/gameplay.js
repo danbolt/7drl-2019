@@ -467,6 +467,8 @@ Gameplay.prototype.setAButtonConfig = function(config) {
     var t = this.game.add.tween(this.player.data.mesh.scale);
     t.to( { y: [1.3, this.player.data.mesh.scale.y] }, 500, Phaser.Easing.Cubic.InOut);
     t.start();
+
+    sfx['swap_a'].play();
   }
 };
 Gameplay.prototype.setBButtonConfig = function(config) {
@@ -477,6 +479,8 @@ Gameplay.prototype.setBButtonConfig = function(config) {
     var t = this.game.add.tween(this.player.data.mesh.scale);
     t.to( { y: [1.3, this.player.data.mesh.scale.y] }, 500, Phaser.Easing.Cubic.InOut);
     t.start();
+
+    sfx['swap_b'].play();
   }
 };
 Gameplay.prototype.setCButtonConfig = function(config) {
@@ -487,6 +491,8 @@ Gameplay.prototype.setCButtonConfig = function(config) {
     var t = this.game.add.tween(this.player.data.mesh.scale);
     t.to( { y: [1.3, this.player.data.mesh.scale.y] }, 500, Phaser.Easing.Cubic.InOut);
     t.start();
+
+    sfx['swap_c'].play();
   }
 };
 
@@ -497,6 +503,7 @@ Gameplay.prototype.update = function() {
   const yDistSqr = yDist * yDist;
   const minDistToExitSqr = 32 * 32;
   if ((xDistSqr + yDistSqr) < minDistToExitSqr) {
+    sfx['end_level'].play();
     this.game.state.start('Gameplay');
     return;
   }
