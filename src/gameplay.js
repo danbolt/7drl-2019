@@ -297,8 +297,6 @@ Gameplay.prototype.generateItem = function(rng) {
 };
 Gameplay.prototype.init = function(seed) {
   this.seed = seed ? seed : stageSeeds[currentStageIndex];
-
-  console.log('seed: ' + this.seed);
 };
 Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
