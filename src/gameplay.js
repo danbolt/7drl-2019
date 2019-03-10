@@ -320,6 +320,10 @@ Gameplay.prototype.preload = function () {
   var translationMatrix = new Phaser.Matrix();
   translationMatrix.translate(-2000, 0);
   translationMatrix.rotate(Math.PI);
+  var enemyMatrix = new Phaser.Matrix();
+  enemyMatrix.translate(-500, -500);
+  enemyMatrix.rotate(Math.PI * 2 * rng.frac());
+  var enemyPointScratchpad = new Phaser.Point();
   var mapCsv = '';
 
   const exitCleanRadius = 6;
@@ -358,12 +362,17 @@ Gameplay.prototype.preload = function () {
           }
 
           if (valueAt < -0.8) {
-            if (clearFromBothSpawnAndExit && (rng.frac() > 0.5)) {
-              // push regular enemy
-              //this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x, config: { moveSpeed: 76 } });
+            const levelProgressValue = currentStageIndex / stageSeeds.length;
+            enemyMatrix.apply(posScratchPad, enemyPointScratchpad);
+            var enemyNoiseAt = noise.simplex2(enemyPointScratchpad.x, enemyPointScratchpad.y);
+            if (clearFromBothSpawnAndExit && (enemyNoiseAt > 0.0)) {
+              const roll = rng.frac();
 
-              // push striker enemy
-              this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x, config: { striker: true, strikeTime: 200, strikeSpeed: 400} });
+              if (roll > levelProgressValue) {
+                this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x, config: { moveSpeed: 76 } });
+              } else {
+                this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x, config: { striker: true, strikeTime: 200, strikeSpeed: 400} });
+              }
             }
           }
         }
@@ -421,7 +430,7 @@ Gameplay.prototype.create = function() {
 
   this.initalizeUI();
 
-  this.setAButtonConfig(testLongStrikeConfig);
+  this.setAButtonConfig(testBackstepConfig);
   this.setBButtonConfig(testMediumStrikeConfig);
   this.setCButtonConfig(testSmallStrikeConfig);
   this.refreshWeaponInfoText();

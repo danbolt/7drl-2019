@@ -57,33 +57,36 @@ var Player = function(game, x, y) {
     bButtonCallback: () => {},
     cButtonCallback: () => {}
   };
-  this.game.input.keyboard.addKey(aButtonKey).onDown.add( () => { this.data.inputInfo.aButtonCallback(); });
-  this.game.input.keyboard.addKey(bButtonKey).onDown.add( () => { this.data.inputInfo.bButtonCallback(); });
-  this.game.input.keyboard.addKey(cButtonKey).onDown.add( () => { this.data.inputInfo.bCuttonCallback(); });
+  this.game.input.keyboard.addKey(aButtonKey).onDown.add( () => { usingGamepad = false; this.data.inputInfo.aButtonCallback(); });
+  this.game.input.keyboard.addKey(bButtonKey).onDown.add( () => { usingGamepad = false; this.data.inputInfo.bButtonCallback(); });
+  this.game.input.keyboard.addKey(cButtonKey).onDown.add( () => { usingGamepad = false; this.data.inputInfo.bCuttonCallback(); });
   var rightArrowKey = this.game.input.keyboard.addKey(rightKey);
-  rightArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.x += 1.0; }, this);
-  rightArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.x -= 1.0; }, this); 
+  rightArrowKey.onDown.add(function () { usingGamepad = false; this.data.inputInfo.inputDirection.x += 1.0; }, this);
+  rightArrowKey.onUp.add(function () { usingGamepad = false; this.data.inputInfo.inputDirection.x -= 1.0; }, this); 
   var leftArrowKey = this.game.input.keyboard.addKey(leftKey);
-  leftArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.x -= 1.0; }, this);
-  leftArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.x += 1.0; }, this); 
+  leftArrowKey.onDown.add(function () { usingGamepad = false; this.data.inputInfo.inputDirection.x -= 1.0; }, this);
+  leftArrowKey.onUp.add(function () { usingGamepad = false; this.data.inputInfo.inputDirection.x += 1.0; }, this); 
   var downArrowKey = this.game.input.keyboard.addKey(downKey);
-  downArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.y += 1.0; }, this);
-  downArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.y -= 1.0; }, this); 
+  downArrowKey.onDown.add(function () { usingGamepad = false; this.data.inputInfo.inputDirection.y += 1.0; }, this);
+  downArrowKey.onUp.add(function () { usingGamepad = false; this.data.inputInfo.inputDirection.y -= 1.0; }, this); 
   var upArrowKey = this.game.input.keyboard.addKey(upKey);
-  upArrowKey.onDown.add(function () { this.data.inputInfo.inputDirection.y -= 1.0; }, this);
-  upArrowKey.onUp.add(function () { this.data.inputInfo.inputDirection.y += 1.0; }, this); 
+  upArrowKey.onDown.add(function () { usingGamepad = false; this.data.inputInfo.inputDirection.y -= 1.0; }, this);
+  upArrowKey.onUp.add(function () { usingGamepad = false; this.data.inputInfo.inputDirection.y += 1.0; }, this); 
 
   // gamepad input initalization
   this.game.input.gamepad.onAxisCallback = ((gamepad) => {
+    usingGamepad = true;
     this.data.inputInfo.inputDirection.x = gamepad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X);
     this.data.inputInfo.inputDirection.y = gamepad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y);
   });
   this.game.input.gamepad.onDownCallback = ((buttonCode) => {
-    if (buttonCode === Phaser.Gamepad.XBOX360_A) {
+    usingGamepad = true;
+
+    if (buttonCode === Phaser.Gamepad.XBOX360_X) {
       this.data.inputInfo.aButtonCallback();
-    } else if (buttonCode === Phaser.Gamepad.XBOX360_B) {
+    } else if (buttonCode === Phaser.Gamepad.XBOX360_A) {
       this.data.inputInfo.bButtonCallback();
-    } else if (buttonCode === Phaser.Gamepad.XBOX360_X) {
+    } else if (buttonCode === Phaser.Gamepad.XBOX360_B) {
       this.data.inputInfo.bCuttonCallback();
     }
   });

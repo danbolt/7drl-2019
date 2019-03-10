@@ -79,6 +79,7 @@ Preload.prototype.create = function() {
   initalizeThreeJS(this.game.renderer.gl);
   loadThreeAssets();
   this.game.scale.onSizeChange.dispatch();
+  threeCanvas.style['image-rendering'] = 'pixelated';
 
   var loadingText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', 'loading...', 8);
   loadingText.anchor.set(0.5);
@@ -109,9 +110,9 @@ LoadingScreen.prototype.create = function() {
 
 LoadingScreen.prototype.update = function() {
   if (threeAllAssetsLoaded === true) {
-    //this.game.state.start('SplashScreen');
+    this.game.state.start('SplashScreen');
     
-    this.game.state.start('Gameplay', true, false, 405050);
+    //this.game.state.start('Gameplay', true, false, 405050);
   }
 }
 LoadingScreen.prototype.shutdown = function() {
@@ -152,7 +153,7 @@ SplashScreen.prototype.create = function() {
 };
 
 var TitleScreen = function() {
-  //
+  this.titleText = null;
 };
 TitleScreen.prototype.create = function() {
   var backing = this.game.add.sprite(0, 0, this.game.cache.getBitmapData('onePx'));
@@ -160,14 +161,14 @@ TitleScreen.prototype.create = function() {
   backing.height = this.game.height;
   backing.tint = 0;
 
-  var titleText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.65, 'font', 'press spacebar to start', 8);
+  var titleText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.65, 'font', 'press spacebar to begin a run', 8);
   titleText.align = 'center';
   titleText.anchor.set(0.5, 0.5);
   jibberize(titleText, this.game);
+  this.titleText = titleText;
 
   var infoText = this.game.add.bitmapText(0.0, this.game.height - 9, 'font', '(c) Daniel Savage 2019 #7drl', 8);
   jibberize(infoText, this.game);
-
 
   var logoFragmentSrc = `
     precision mediump float;
@@ -226,15 +227,40 @@ TitleScreen.prototype.create = function() {
 
     });
 
-  this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR).onDown.add( function() {
+  var startGameCallback = () => {
     for (var i = 0; i < stageSeeds.length; i++) {
       stageSeeds[i] = ~~(Math.random() * Number.MAX_SAFE_INTEGER);
     }
     currentStageIndex = 0;
 
+    this.game.input.gamepad.onAxisCallback = null;
+    this.game.input.gamepad.onDownCallback = null;
+    this.titleText = null;
+
     this.game.state.start('CutSceneScreen', true, false, introLines, 'IntermitentScreen', 'Gameplay');
-  }, this);
+  };
+
+
+  this.game.input.gamepad.onAxisCallback = ((gamepad) => {
+    usingGamepad = true;
+  });
+  this.game.input.gamepad.onDownCallback = ((buttonCode) => {
+    usingGamepad = true;
+
+    if (buttonCode === Phaser.Gamepad.XBOX360_START) {
+      startGameCallback();
+    }
+  });
+
+  this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR).onDown.add(() => { usingGamepad = false; startGameCallback(); } , this);
 };
+TitleScreen.prototype.update = function () {
+  if (usingGamepad) {
+    this.titleText.text = 'press start to begin a run';
+  } else {
+    this.titleText.text = 'press spacebar to begin a run'
+  }
+}
 
 
 var IntermitentScreen = function() {

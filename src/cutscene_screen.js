@@ -13,6 +13,7 @@ CutSceneScreen.prototype.init = function (messages, nextState, forInter) {
   this.forInter = forInter;
 };
 CutSceneScreen.prototype.startGame = function() {
+  this.game.input.gamepad.onDownCallback = null;
   this.game.state.start(this.nextState, true, false, this.forInter);
 }
 CutSceneScreen.prototype.create = function () {
@@ -23,10 +24,23 @@ CutSceneScreen.prototype.create = function () {
 
   initalizeYendorShowcase(this);
 
-  var pressEscToSkip = this.game.add.bitmapText(2, 2, 'font', '(press ESC to SKIP this)', 8);
+  var pressEscToSkip = this.game.add.bitmapText(2, 2, 'font', '(press START to SKIP this)', 8);
   this.game.input.keyboard.addKey(Phaser.KeyCode.ESC).onDown.add(() => {
+    usingGamepad = false;
     this.startGame();
   });
+  if (usingGamepad === false) {
+    pressEscToSkip.text = '(press ESC to SKIP this)';
+  }
+
+  this.game.input.gamepad.onDownCallback = ((buttonCode) => {
+    usingGamepad = true;
+
+    if (buttonCode === Phaser.Gamepad.XBOX360_START) {
+      this.startGame();
+    }
+  });
+
   jibberize(pressEscToSkip, this.game);
   this.game.time.events.add(2000, function() {
     pressEscToSkip.visible = false;

@@ -1,3 +1,4 @@
+var usingGamepad = false;
 
 var sfx = {};
 
