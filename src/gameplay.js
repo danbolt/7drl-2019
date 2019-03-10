@@ -90,6 +90,9 @@ var Gameplay = function () {
   this.itemInfoText = null;
   this.weaponInfoText = null;
   this.deathText = null;
+  this.topWipe = null;
+  this.bottomWipe = null;
+  this.exiting = false;
 };
 Gameplay.prototype.shutdown = function() {
   unloadThreeScene();
@@ -114,6 +117,9 @@ Gameplay.prototype.shutdown = function() {
   this.itemInfoText = null;
   this.weaponInfoText = null;
   this.deathText = null;
+  this.topWipe = null;
+  this.bottomWipe = null;
+  this.exiting = false;
 
   this.game.camera.position.set(0, 0);
 };
@@ -371,6 +377,8 @@ Gameplay.prototype.preload = function () {
 
 const levelStartSounds = ['level_start_0', 'level_start_1'];
 Gameplay.prototype.create = function() {
+  this.exiting = false;
+
   this.player = new Player(this.game, this.levelGenData.spawn.x * GameplayTileSize, this.levelGenData.spawn.y * GameplayTileSize);
   this.player.renderable = false;
   this.player.events.onKilled.add(() => {
@@ -450,6 +458,27 @@ Gameplay.prototype.initalizeUI = function () {
   this.itemInfoText.anchor.x = 0.5;
   this.itemInfoText.align = 'center';
   this.ui.addChild(this.itemInfoText);
+
+  this.topWipe = this.game.add.sprite(0, 0, this.game.cache.getBitmapData('onePx'));
+  this.topWipe.tint = 0;
+  this.topWipe.width = this.game.width * 2;
+  this.topWipe.height = this.game.height;
+  this.topWipe.rotation = Math.atan2(this.game.height, this.game.width);
+  this.ui.addChild(this.topWipe);
+  var tTop = this.game.add.tween(this.topWipe);
+  tTop.to({ rotation: Math.PI }, 2000, undefined, false, 1000);
+  tTop.start();
+
+  this.bottomWipe = this.game.add.sprite(this.game.width, this.game.height, this.game.cache.getBitmapData('onePx'));
+  this.bottomWipe.tint = 0;
+  this.bottomWipe.width = this.game.width * 2;
+  this.bottomWipe.height = this.game.height;
+  this.bottomWipe.rotation = Math.atan2(-this.game.height, -this.game.width);
+  this.ui.addChild(this.bottomWipe);
+  var tBottom = this.game.add.tween(this.bottomWipe);
+  tBottom.to({ rotation: Math.atan2(-this.game.height, -this.game.width) + Math.PI }, 2000, undefined, false, 1000);
+  tBottom.start();
+  
 };
 Gameplay.prototype.updateUI = function () {
   this.staminaBar.width = (StaminaBarWidth - 4) * this.player.data.stamina;
@@ -502,7 +531,8 @@ Gameplay.prototype.update = function() {
   const yDist = (this.levelGenData.exit.y * GameplayTileSize) - this.player.y;
   const yDistSqr = yDist * yDist;
   const minDistToExitSqr = 32 * 32;
-  if ((xDistSqr + yDistSqr) < minDistToExitSqr) {
+  if (((xDistSqr + yDistSqr) < minDistToExitSqr) && (this.exiting === false)) {
+    this.exiting = true;
     sfx['end_level'].play();
 
     currentStageIndex++;
@@ -512,7 +542,16 @@ Gameplay.prototype.update = function() {
 
       this.game.state.start('CutSceneScreen', true, false, winLines, 'TitleScreen');
     } else {
-      this.game.state.start('Gameplay');
+      var tTop = this.game.add.tween(this.topWipe);
+      tTop.to({ rotation: Math.atan2(this.game.height, this.game.width) }, 600, undefined, false, 0);
+      tTop.start();
+      var tBottom = this.game.add.tween(this.bottomWipe);
+      tBottom.to({ rotation: Math.atan2(-this.game.height, -this.game.width) }, 600, undefined, false, 0);
+      tBottom.start();
+
+      tBottom.onComplete.add(() => {
+        this.game.state.start('Gameplay');
+      });
     }
     return;
   }
@@ -522,7 +561,6 @@ Gameplay.prototype.update = function() {
 
   this.updateUI();
 
-  
   this.game.physics.arcade.overlap(this.player, this.enemies, function (player, enemy) {
     if (player.data.state === PlayerState.STRIKE) {
       enemy.damage(player.data.powerValue)
