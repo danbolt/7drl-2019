@@ -138,7 +138,7 @@ SplashScreen.prototype.create = function() {
         sfx['enter'].play(undefined, undefined, 0.4);
         this.game.time.events.add(1500, function () {
           var bgm = this.game.add.audio('bgm');
-          bgm.play(undefined, undefined, 0.3);
+          bgm.play(undefined, undefined, 0.45, true);
           this.game.state.start('TitleScreen');
         }, this);
       }, this);

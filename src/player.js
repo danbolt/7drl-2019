@@ -93,6 +93,7 @@ var Player = function(game, x, y) {
     if (this.data.mesh) {
       this.data.mesh.matrixAutoUpdate = false;
       this.data.mesh.visible = false;
+      sfx['death'].play(undefined, undefined, 0.8);
     }
   }, this);
 
