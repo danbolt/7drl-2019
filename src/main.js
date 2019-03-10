@@ -7,6 +7,7 @@ var main = function () {
   game.state.add('SplashScreen', SplashScreen, false);
   game.state.add('CutSceneScreen', CutSceneScreen, false);
   game.state.add('TitleScreen', TitleScreen, false);
+  game.state.add('IntermitentScreen', IntermitentScreen, false);
   game.state.add('Gameplay', Gameplay, false);
 
 	game.state.start('Preload');

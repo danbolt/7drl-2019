@@ -232,6 +232,37 @@ TitleScreen.prototype.create = function() {
     }
     currentStageIndex = 0;
 
-    this.game.state.start('CutSceneScreen', true, false, introLines, 'Gameplay');
+    this.game.state.start('CutSceneScreen', true, false, introLines, 'IntermitentScreen', 'Gameplay');
+  }, this);
+};
+
+
+var IntermitentScreen = function() {
+  this.nextState = 'TitleScreen';
+};
+IntermitentScreen.prototype.init = function(nextState) {
+  this.nextState = (nextState ? nextState : 'TitleScreen');
+}
+IntermitentScreen.prototype.create = function() {
+  var backing = this.game.add.sprite(0, 0, this.game.cache.getBitmapData('onePx'));
+  backing.width = this.game.width;
+  backing.height = this.game.height;
+  backing.tint = 0;
+
+  const msg = 'floor ' + (currentStageIndex + 1) + ' of ' + stageSeeds.length;
+  var titleText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.5, 'font', msg, 8);
+  titleText.align = 'center';
+  titleText.anchor.set(0.5, 0.5);
+  titleText.visible = false;
+  jibberize(titleText, this.game);
+  this.game.time.events.add(400, function () {
+    titleText.visible = true;
+  }, this);
+  this.game.time.events.add(1600, function () {
+    titleText.visible = false;
+  }, this);
+
+  this.game.time.events.add(2000, function () {
+    this.game.state.start(this.nextState);
   }, this);
 };

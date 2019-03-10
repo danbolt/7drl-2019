@@ -535,10 +535,11 @@ Gameplay.prototype.update = function() {
     this.exiting = true;
     sfx['end_level'].play();
 
+    this.game.input.gamepad.onAxisCallback = ((gamepad) => { });
+    this.game.input.gamepad.onDownCallback = ((buttonCode) => { });
+
     currentStageIndex++;
     if (currentStageIndex >= stageSeeds.length) {
-      this.game.input.gamepad.onAxisCallback = ((gamepad) => { });
-      this.game.input.gamepad.onDownCallback = ((buttonCode) => { });
 
       this.game.state.start('CutSceneScreen', true, false, winLines, 'TitleScreen');
     } else {
@@ -550,7 +551,8 @@ Gameplay.prototype.update = function() {
       tBottom.start();
 
       tBottom.onComplete.add(() => {
-        this.game.state.start('Gameplay');
+        this.game.state.start('IntermitentScreen', true, false, 'Gameplay');
+        //this.game.state.start('Gameplay');
       });
     }
     return;

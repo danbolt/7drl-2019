@@ -7,12 +7,13 @@ CutSceneScreen.prototype.shutdown = function () {
   this.messages = [];
   this.nextState = 'TitleScreen';
 };
-CutSceneScreen.prototype.init = function (messages, nextState) {
+CutSceneScreen.prototype.init = function (messages, nextState, forInter) {
   this.messages = messages;
   this.nextState = nextState;
+  this.forInter = forInter;
 };
 CutSceneScreen.prototype.startGame = function() {
-  this.game.state.start(this.nextState, true, false, );
+  this.game.state.start(this.nextState, true, false, this.forInter);
 }
 CutSceneScreen.prototype.create = function () {
   var backing = this.game.add.sprite(0, 0, this.game.cache.getBitmapData('onePx'));
