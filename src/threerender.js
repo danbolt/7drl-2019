@@ -321,7 +321,10 @@ var threeAllAssetsLoaded = false;
     floorMaterial2.needsUpdate = true;
   };
 
-  var generateAmuletOfYendor = function() {
+  var generateAmuletOfYendor = function(links) {
+
+    links = links ? links : 12;
+
     var yendor = new THREE.Group();
 
     var centerGeom = new THREE.SphereBufferGeometry(0.9, 3);
@@ -329,9 +332,9 @@ var threeAllAssetsLoaded = false;
     centerMesh.position.set(0.0, 0.0, 2.2);
 
     var chain = new THREE.Group();
-    for (var i = 0; i < 12; i++) {
+    for (var i = 0; i < links; i++) {
       var linkMesh = new THREE.Mesh(centerGeom, playerMaterial);
-      linkMesh.position.set(2 * Math.cos(i / 12 * Math.PI * 2), 0, 2 * Math.sin(i / 12 * Math.PI * 2));
+      linkMesh.position.set(2 * Math.cos(i / links * Math.PI * 2), 0, 2 * Math.sin(i / links * Math.PI * 2));
       linkMesh.scale.set(0.25, 0.25, 0.25);
       chain.add(linkMesh);
     }
@@ -340,12 +343,15 @@ var threeAllAssetsLoaded = false;
     yendor.add(centerMesh);
     yendor.rotation.x = Math.PI * 0.25;
 
-    return yendor;
+    var yendorWrapper = new THREE.Group();
+    yendorWrapper.add(yendor);
+
+    return yendorWrapper;
   };
   initalizeYendorShowcase = function(cutsceneState) {
-    camera.position.set(0, 0, 5);
+    camera.position.set(0, 2, 7);
 
-    var yendor = generateAmuletOfYendor();
+    var yendor = generateAmuletOfYendor(32);
     scene.add(yendor);
 
     var rotT = cutsceneState.game.add.tween(yendor.rotation);
@@ -478,16 +484,31 @@ var threeAllAssetsLoaded = false;
       var itemMesh = new THREE.Mesh(boxGeom, playerMaterial);
       itemMesh.rotation.set(Math.PI * 0.25, Math.PI * 0.25, Math.PI * 0.25);
       itemMesh.position.set(item.x * WorldScale, 0, item.y * WorldScale);
+      itemMesh.scale.set(0.75, 0.75, 0.75);
       scene.add(itemMesh);
       item.data.mesh = itemMesh;
     }, this);
 
-    var amuletOfYendorMesh = new THREE.Mesh( testEnemyGeom, playerMaterial );
     var amuletOfYendorPos = gameplayState.levelGenData.exit;
-    amuletOfYendorMesh.position.set(amuletOfYendorPos.x, 0, amuletOfYendorPos.y);
-    scene.add(amuletOfYendorMesh);
-    var amuletRotationTween = gameplayState.game.add.tween(amuletOfYendorMesh.rotation);
-    amuletRotationTween.to( { y: (Math.PI * 2) }, 2000, Phaser.Easing.Linear.None, true, 0, -1);
+    if (currentStageIndex === (stageSeeds.length - 1)) {
+      var amuletOfYendorMesh = generateAmuletOfYendor(14);
+      amuletOfYendorMesh.scale.set(0.5, 0.5, 0.5);
+      amuletOfYendorMesh.position.set(amuletOfYendorPos.x, 0, amuletOfYendorPos.y);
+      scene.add(amuletOfYendorMesh);
+      var amuletRotationTween = gameplayState.game.add.tween(amuletOfYendorMesh.rotation);
+      amuletRotationTween.to( { y: (Math.PI * 2) }, 2000, Phaser.Easing.Linear.None, true, 0, -1);
+    } else {
+      var portalGroup = new THREE.Group();
+      portalGroup.position.set(amuletOfYendorPos.x, 0, amuletOfYendorPos.y);
+      for (var i = 0; i < 3; i++) {
+        var portalMesh = new THREE.Mesh(boxGeom, playerMaterial);
+        portalMesh.rotation.set(Math.PI * (0.33 * i) * 2, Math.PI * 0.25, Math.PI * 0.25);
+        var pt = gameplayState.game.add.tween(portalMesh.rotation);
+        pt.to({ x: (portalMesh.rotation.x + Math.PI * 2), y: (portalMesh.rotation.y + Math.PI * 2), z: (portalMesh.rotation.z + Math.PI * 2)}, 500, Phaser.Easing.Linear.None, true, i * 100, -1);
+        portalGroup.add(portalMesh);
+      }
+      scene.add(portalGroup);
+    }
 
     var tileGeom = new THREE.PlaneBufferGeometry(1, 1, 5, 5)
     for (var i = 0; i < 20; i++) {
