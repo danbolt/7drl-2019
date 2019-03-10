@@ -132,6 +132,9 @@ SplashScreen.prototype.create = function() {
   splashText.align = 'center';
   splashText.anchor.set(0.5, 0.5);
   jibberize(splashText, this.game);
+  
+  this.game.input.gamepad.onAxisCallback = ((gamepad) => { usingGamepad = true; });
+  this.game.input.gamepad.onDownCallback = ((buttonCode) => { usingGamepad = true });
 
   splashText.children.forEach(function (letter, i) {
     var t = this.game.add.tween(letter.position);

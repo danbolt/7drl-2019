@@ -297,7 +297,8 @@ Gameplay.prototype.generateItem = function(rng) {
     }
   }
 
-  val.swapControls = val.name + '\n\nPress S to overwrite move a\nPress D to overwrite move b\nPress F to overwrite move c'
+  val.swapControls = val.name + '\n\nPress S to overwrite move 1\nPress D to overwrite move 2\nPress F to overwrite move 3'
+  val.swapControlsGamepad = val.name + '\n\nPress LB to overwrite move 1\nPress Y to overwrite move 2\nPress RB to overwrite move 3'
 
   return val;
 };
@@ -455,7 +456,7 @@ Gameplay.prototype.initalizeUI = function () {
   this.staminaBar.height = StaminaBarHeight - 4;
   this.ui.addChild(this.staminaBar);
 
-  this.weaponInfoText = this.game.add.bitmapText(112, staminaBarSpot, 'font', 'Move A: ohhhhhaaaaaaaaaaaaaaaaaaaaaah\n\nMove B: umaaaaaaaaaaaaaaaaaaaaaamm\n\nMove C: ahhaaaaaaaaaaaaaaaaaaaaaah', 7);
+  this.weaponInfoText = this.game.add.bitmapText(112, staminaBarSpot, 'font', 'move 1: ohhhhhaaaaaaaaaaaaaaaaaaaaaah\n\nmove 2: umaaaaaaaaaaaaaaaaaaaaaamm\n\nmove 3: ahhaaaaaaaaaaaaaaaaaaaaaah', 7);
   this.ui.addChild(this.weaponInfoText);
   jibberize(this.weaponInfoText, this.game);
 
@@ -499,7 +500,7 @@ Gameplay.prototype.updateUI = function () {
   this.itemInfoText.visible = false;
 };
 Gameplay.prototype.refreshWeaponInfoText = function() {
-  this.weaponInfoText.text = 'Move A: ' + this.aButtonItem.name + '\nMove B: ' + this.bButtonItem.name + '\nMove C: ' + this.cButtonItem.name;
+  this.weaponInfoText.text = 'Move 1: ' + this.aButtonItem.name + '\nMove 2: ' + this.bButtonItem.name + '\nMove 3: ' + this.cButtonItem.name;
 }
 Gameplay.prototype.setAButtonConfig = function(config) {
   this.player.setAButtonConfig(config);
@@ -586,23 +587,26 @@ Gameplay.prototype.update = function() {
   this.game.physics.arcade.overlap(this.player, this.items, function(player, item) {
     if (player.data.state === PlayerState.NORMAL) {
       this.itemInfoText.visible = true;
-      this.itemInfoText.text = item.data.info.swapControls;
+      this.itemInfoText.text = usingGamepad ? item.data.info.swapControlsGamepad : item.data.info.swapControls;
       this.itemInfoText.position.set((item.data.mesh.position.x * GameplayTileSize) - this.game.camera.x, 32 + (item.data.mesh.position.z * GameplayTileSize) - this.game.camera.y)
 
       
-        if (this.game.input.keyboard.isDown(Phaser.KeyCode.S)) {
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.S) || 
+              (this.game.input.gamepad.isDown(Phaser.Gamepad.XBOX360_LEFT_BUMPER))) {
           this.setAButtonConfig(item.data.info);
           this.refreshWeaponInfoText();
           item.data.mesh.visible = false;
           item.data.mesh.matrixAutoUpdate = false;
           item.kill();
-        } else if (this.game.input.keyboard.isDown(Phaser.KeyCode.D)) {
+        } else if (this.game.input.keyboard.isDown(Phaser.KeyCode.D) || 
+              (this.game.input.gamepad.isDown(Phaser.Gamepad.XBOX360_Y))) {
           this.setBButtonConfig(item.data.info);
           this.refreshWeaponInfoText();
           item.data.mesh.visible = false;
           item.data.mesh.matrixAutoUpdate = false;
           item.kill();
-        } else if (this.game.input.keyboard.isDown(Phaser.KeyCode.F)) {
+        } else if (this.game.input.keyboard.isDown(Phaser.KeyCode.F) || 
+              (this.game.input.gamepad.isDown(Phaser.Gamepad.XBOX360_RIGHT_BUMPER))) {
           this.setCButtonConfig(item.data.info);
           this.refreshWeaponInfoText();
           item.data.mesh.visible = false;
