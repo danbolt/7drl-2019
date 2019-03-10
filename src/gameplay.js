@@ -296,7 +296,9 @@ Gameplay.prototype.generateItem = function(rng) {
   return val;
 };
 Gameplay.prototype.init = function(seed) {
-  this.seed = seed;
+  this.seed = seed ? seed : stageSeeds[currentStageIndex];
+
+  console.log('seed: ' + this.seed);
 };
 Gameplay.prototype.preload = function () {
   this.game.cache.removeTilemap('gen_map');
@@ -504,7 +506,13 @@ Gameplay.prototype.update = function() {
   const minDistToExitSqr = 32 * 32;
   if ((xDistSqr + yDistSqr) < minDistToExitSqr) {
     sfx['end_level'].play();
-    this.game.state.start('Gameplay');
+
+    currentStageIndex++;
+    if (currentStageIndex >= stageSeeds.length) {
+      this.game.state.start('CutSceneScreen', true, false, winLines, 'TitleScreen');
+    } else {
+      this.game.state.start('Gameplay');
+    }
     return;
   }
 

@@ -14,8 +14,8 @@ CutSceneScreen.prototype.init = function (messages, nextState) {
   this.messages = messages;
   this.nextState = nextState;
 };
-CutSceneScreen.prototype.startGame = function(seed) {
-  this.game.state.start(this.nextState, true, false, seed);
+CutSceneScreen.prototype.startGame = function() {
+  this.game.state.start(this.nextState, true, false, );
 }
 CutSceneScreen.prototype.create = function () {
   var backing = this.game.add.sprite(0, 0, this.game.cache.getBitmapData('onePx'));
@@ -23,12 +23,9 @@ CutSceneScreen.prototype.create = function () {
   backing.height = this.game.height;
   backing.tint = 0;
 
-  // Daniel fix this
-  var seed = ~~(Math.random() * Number.MAX_SAFE_INTEGER);
-
   var pressEscToSkip = this.game.add.bitmapText(2, 2, 'font', '(press ESC to SKIP this)', 8);
   this.game.input.keyboard.addKey(Phaser.KeyCode.ESC).onDown.add(() => {
-    this.startGame(seed);
+    this.startGame();
   });
   jibberize(pressEscToSkip, this.game);
   this.game.time.events.add(2000, function() {
@@ -91,7 +88,7 @@ CutSceneScreen.prototype.create = function () {
             playLine();
           } else {
             this.game.time.events.add(1000, () => {
-              this.startGame(seed);
+              this.startGame();
             }, this);
           }
         }, this);

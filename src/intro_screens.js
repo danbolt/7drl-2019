@@ -34,6 +34,9 @@ const clipsToLoad = [
   'windup_1'
 ];
 
+var stageSeeds = [0, 0, 0, 0, 0, 0, 0, 0];
+var currentStageIndex = 0;
+
 var Preload = function () {
   //
 };
@@ -161,6 +164,11 @@ TitleScreen.prototype.create = function() {
   jibberize(titleText, this.game);
 
   this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR).onDown.add( function() {
+    for (var i = 0; i < stageSeeds.length; i++) {
+      stageSeeds[i] = ~~(Math.random() * Number.MAX_SAFE_INTEGER);
+    }
+    currentStageIndex = 0;
+
     this.game.state.start('CutSceneScreen', true, false, introLines, 'Gameplay');
 
     // vvv for winning later
