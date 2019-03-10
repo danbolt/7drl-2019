@@ -46,17 +46,21 @@ var introLines = [
     line: '...it\'s like im talking to a child...'
   },
   {
-    line: 'ever heard of\nthe amulet of yendor?'
+    line: 'ever heard of\nthe amulet of yendor?',
+    hideBacking: true
   },
   {
     line: '...huh?',
-    shock: true
+    shock: true,
+    hideBacking: true
   },
   {
-    line: 'yeah, typical\n\ni figured you\'d say that'
+    line: 'yeah, typical\n\ni figured you\'d say that',
+    hideBacking: true
   },
   {
-    line: '...'
+    line: '...',
+    hideBacking: true
   },
   {
     line: 'i want you to go get\nthat goddamn amulet'
@@ -75,20 +79,25 @@ var introLines = [
 var winLines = [
   {
     line: 'holy crap!!!!',
-    shock: true
+    shock: true,
+    hideBacking: true
   },
   {
     line: 'you actually got the amulet!!!',
-    shock: true
+    shock: true,
+    hideBacking: true
   },
   {
-    line: '...wow'
+    line: '...wow',
+    hideBacking: true
   },
   {
-    line: 'that\'s too crazy\n\ni totally thought you were\ngoing to die'
+    line: 'that\'s too crazy\n\ni totally thought you were\ngoing to die',
+    hideBacking: true
   },
   {
-    line: '...'
+    line: '...',
+    hideBacking: true
   },
   {
     line: 'anyway, well done'

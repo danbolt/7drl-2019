@@ -1,6 +1,3 @@
-// message format:
-// { line: <string> }
-
 var CutSceneScreen = function () {
   this.messages = [];
   this.nextState = 'TitleScreen';
@@ -22,6 +19,8 @@ CutSceneScreen.prototype.create = function () {
   backing.width = this.game.width;
   backing.height = this.game.height;
   backing.tint = 0;
+
+  initalizeYendorShowcase(this);
 
   var pressEscToSkip = this.game.add.bitmapText(2, 2, 'font', '(press ESC to SKIP this)', 8);
   this.game.input.keyboard.addKey(Phaser.KeyCode.ESC).onDown.add(() => {
@@ -71,6 +70,11 @@ CutSceneScreen.prototype.create = function () {
     if (this.messages[messageCounter].altSound) {
       talkSound = this.messages[messageCounter].altSound;
     }
+    if (this.messages[messageCounter].hideBacking) {
+      backing.visible = false;
+    } else {
+      backing.visible = true;
+    }
 
     titleText.children.forEach((child, i, arr) => {
       const delay = i * textBipDelay;
@@ -96,4 +100,11 @@ CutSceneScreen.prototype.create = function () {
     });
   };
   playLine();
+};
+CutSceneScreen.prototype.update = function() {
+
+  renderThreeScene();
+};
+CutSceneScreen.prototype.shutdown = function() {
+  unloadThreeScene();
 };

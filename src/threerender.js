@@ -319,7 +319,40 @@ var threeAllAssetsLoaded = false;
     floorMaterial2 = testMaterial.clone();
     floorMaterial2.uniforms.ambianceColor.value.set(0.74, 0.3, 0.3, 0.6);
     floorMaterial2.needsUpdate = true;
-  }
+  };
+
+  var generateAmuletOfYendor = function() {
+    var yendor = new THREE.Group();
+
+    var centerGeom = new THREE.SphereBufferGeometry(0.9, 3);
+    var centerMesh = new THREE.Mesh(centerGeom, enemyMaterial);
+    centerMesh.position.set(0.0, 0.0, 2.2);
+
+    var chain = new THREE.Group();
+    for (var i = 0; i < 12; i++) {
+      var linkMesh = new THREE.Mesh(centerGeom, playerMaterial);
+      linkMesh.position.set(2 * Math.cos(i / 12 * Math.PI * 2), 0, 2 * Math.sin(i / 12 * Math.PI * 2));
+      linkMesh.scale.set(0.25, 0.25, 0.25);
+      chain.add(linkMesh);
+    }
+
+    yendor.add(chain);
+    yendor.add(centerMesh);
+    yendor.rotation.x = Math.PI * 0.25;
+
+    return yendor;
+  };
+  initalizeYendorShowcase = function(cutsceneState) {
+    camera.position.set(0, 0, 5);
+
+    var yendor = generateAmuletOfYendor();
+    scene.add(yendor);
+
+    var rotT = cutsceneState.game.add.tween(yendor.rotation);
+    rotT.to({ y: Math.PI * 2}, 5000, Phaser.Easing.Linear.None, true, 100, -1);
+
+    camera.lookAt(0, 0, 0);
+  };
 
   var initializePlayerGeom = function() {
     var boxGeom = new THREE.BoxBufferGeometry( 1.0, 1.0, 1.0, 3, 3, 3);
