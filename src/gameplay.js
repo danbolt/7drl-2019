@@ -20,9 +20,9 @@ const testSmallStrikeConfig = {
   speed: 800,
   decayTime: 30,
   duration: 40,
-  staminaCost: 0.2,
+  staminaCost: 0.13,
   windupSpeed: -70,
-  windupTime: 100,
+  windupTime: 115,
   power: 2,
   type: 'small'
 };
@@ -507,6 +507,11 @@ Gameplay.prototype.update = function() {
 
     currentStageIndex++;
     if (currentStageIndex >= stageSeeds.length) {
+
+
+      this.game.input.gamepad.onAxisCallback = ((gamepad) => { });
+      this.game.input.gamepad.onDownCallback = ((buttonCode) => { });
+      
       this.game.state.start('CutSceneScreen', true, false, winLines, 'TitleScreen');
     } else {
       this.game.state.start('Gameplay');

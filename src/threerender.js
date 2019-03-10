@@ -507,6 +507,8 @@ var threeAllAssetsLoaded = false;
         pt.to({ x: (portalMesh.rotation.x + Math.PI * 2), y: (portalMesh.rotation.y + Math.PI * 2), z: (portalMesh.rotation.z + Math.PI * 2)}, 500, Phaser.Easing.Linear.None, true, i * 100, -1);
         portalGroup.add(portalMesh);
       }
+      var ts = gameplayState.game.add.tween(portalGroup.scale);
+      ts.to( { x: [1.5, 1 ], z: [1.5, 1] }, 676, Phaser.Easing.Cubic.InOut, true, undefined, -1);
       scene.add(portalGroup);
     }
 
