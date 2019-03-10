@@ -57,6 +57,7 @@ var BasicEnemy = function (game, x, y, player, health, beDeadTime, config) {
   this.data.enemyHealth = health;
   this.data.config = config;
   this.data.strikeAble = true;
+  this.data.strikeTween = null;
 
   this.renderable = false;
 };
@@ -84,7 +85,17 @@ BasicEnemy.prototype.update = function() {
   if (withinPlayerRange && (this.data.config.striker === true) && (this.data.strikeAble === true)) {
     this.data.strikeAble = false;
 
-    this.data.moveSpeed = -50;
+    this.data.moveSpeed = -70;
+    if (this.data.mesh) {
+      if (this.data.strikeTween === null) {
+        var t = this.game.add.tween(this.data.mesh.scale);
+        t.to( { z: [0.25, this.data.mesh.scale.z] }, 300, Phaser.Easing.Cubic.Out);
+        t.start();
+        this.data.strikeTween = t;
+      }
+      this.data.strikeTween.start();
+    }
+
     this.game.time.events.add(300, () => {
       this.data.moveSpeed = this.data.config.strikeSpeed;
       this.game.time.events.add(this.data.config.strikeTime, () => {

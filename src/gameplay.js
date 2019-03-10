@@ -346,7 +346,7 @@ Gameplay.prototype.preload = function () {
             this.levelGenData.items.push(newItem);
           }
 
-          if (valueAt < -0.899) {
+          if (valueAt < -0.8) {
             if (clearFromBothSpawnAndExit && (rng.frac() > 0.5)) {
               this.levelGenData.enemies.push({ x: posScratchPad.y, y: posScratchPad.x, config: { striker: true, strikeTime: 200, strikeSpeed: 400} });
             }

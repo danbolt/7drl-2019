@@ -31,6 +31,7 @@ var threeAllAssetsLoaded = false;
   var playerMaterial = undefined;
   var wallMaterial = undefined;
   var enemyMaterial = undefined;
+  var strikerMaterial = undefined;
 
   var modelsToLoad = [
     'player_test'
@@ -56,7 +57,7 @@ var threeAllAssetsLoaded = false;
     camera = new THREE.PerspectiveCamera( 60, phaserWebGLContext.drawingBufferWidth / phaserWebGLContext.drawingBufferHeight, 0.1, 600 );
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor(new THREE.Color(0.2, 0.2, 0.2), 1.0);
+    renderer.setClearColor(new THREE.Color(0.15, 0.15, 0.15), 1.0);
     renderer.setSize(phaserWebGLContext.drawingBufferWidth, phaserWebGLContext.drawingBufferHeight );
     document.body.appendChild( renderer.domElement );
     renderer.domElement.style["z-index"] = -1;
@@ -201,8 +202,106 @@ var threeAllAssetsLoaded = false;
                       `
     });
 
+    strikerMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 1.0 },
+        lightDirection: { value: globalLightDirection },
+        lightAmbiance: { value: globalLightAmbiance },
+        ambianceColor: { value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) }
+      },
+
+      vertexShader: `
+                      uniform float time;
+                      uniform vec3 lightDirection;
+
+                      varying float noiseVal;
+                      varying float diffuse;
+
+                      // 3D noise function taken from:
+                      // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+                      float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+                      vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+                      vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
+                      float noise(vec3 p){
+                          vec3 a = floor(p);
+                          vec3 d = p - a;
+                          d = d * d * (3.0 - 2.0 * d);
+
+                          vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+                          vec4 k1 = perm(b.xyxy);
+                          vec4 k2 = perm(k1.xyxy + b.zzww);
+
+                          vec4 c = k2 + a.zzzz;
+                          vec4 k3 = perm(c);
+                          vec4 k4 = perm(c + 1.0);
+
+                          vec4 o1 = fract(k3 * (1.0 / 41.0));
+                          vec4 o2 = fract(k4 * (1.0 / 41.0));
+
+                          vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+                          vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+
+                          return o4.y * d.y + o4.x * (1.0 - d.y);
+                      }
+
+
+                      float ps1(float v) {
+                        float granularity = 0.05;
+                        if (mod(v, granularity) > (granularity * 0.5)) {
+                          return floor(v / granularity) * granularity;
+                        } else {
+                          return ceil(v / granularity) * granularity;
+                        }
+                        
+                      }
+
+                      void main() {
+                        vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+
+                        // warp position
+                        noiseVal = noise(modelViewPosition.xyz * ((0.5 * sin(time * 0.0002)) + 1.0));
+                        if (noiseVal > 0.5) {
+                          modelViewPosition = modelViewPosition + (vec4(((sin(time * 0.012 + 2.0)) * noise(modelViewPosition.xyz) * 0.125), 0.0, ((sin(time * 0.012 + 4.0)) * noise(modelViewPosition.xyz) * 0.12), 0.0));
+                        }
+                        gl_Position = projectionMatrix * modelViewPosition;
+                        gl_Position = vec4(ps1(gl_Position.x), ps1(gl_Position.y), ps1(gl_Position.z), ps1(gl_Position.w));
+
+                        vec4 worldSpaceNormal = modelViewMatrix * vec4(normal, 0.0);
+                        // diffuse calculation
+                        diffuse = max(dot((lightDirection * -1.0), worldSpaceNormal.xyz), 0.0);
+                      }
+                    `,
+      fragmentShader: `
+                        uniform float time;
+                        uniform vec4 lightAmbiance;
+                        uniform vec4 ambianceColor;
+
+                        varying float noiseVal;
+                        varying float diffuse;
+
+                        void main() {
+                          if (noiseVal > 0.7) {
+                            gl_FragColor = vec4(0.32, 0.32, 0.32, 1.0);
+                          } else if (noiseVal > 0.3) {
+                            gl_FragColor = vec4(0.01, 0.01, 0.23, 1.0);
+                          } else {
+                            gl_FragColor = vec4(0.05, 0.05, 0.05, 1.0);
+                          }
+
+                          if (diffuse < 0.2) {
+                            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+                          }
+
+                          vec2 clampedPos = vec2(floor(gl_FragCoord.x / 16.0), floor(gl_FragCoord.y / 16.0));
+                          if (distance(clampedPos, gl_FragCoord.xy) < 10.0) {
+                            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+                          }
+                        }
+                      `
+    });
+
     playerMaterial = testMaterial.clone();
-    playerMaterial.uniforms.ambianceColor.value.set(0.0, 1.0, 1.0, 1.0);
+    playerMaterial.uniforms.ambianceColor.value.set(0.0, 2.0, 2.0, 1.0);
     playerMaterial.needsUpdate = true;
 
     wallMaterial = testMaterial.clone();
@@ -311,14 +410,29 @@ var threeAllAssetsLoaded = false;
 
     var testEnemyGeom = new THREE.SphereBufferGeometry(1, 5, 5);
     gameplayState.enemies.forEach(function (enemy) {
-      var enemyMesh = new THREE.Mesh(testEnemyGeom, enemyMaterial);
-      enemyMesh.position.set(enemy.x * WorldScale, 0, enemy.y * WorldScale);
-      scene.add(enemyMesh);
-      enemy.data.mesh = enemyMesh;
+      if (enemy.data.config.striker === true) {
+        var enemyMesh = new THREE.Mesh(testEnemyGeom, strikerMaterial);
+        enemyMesh.position.set(enemy.x * WorldScale, 0, enemy.y * WorldScale);
+        scene.add(enemyMesh);
+        enemy.data.mesh = enemyMesh;
+
+        enemyMesh.scale.set(0.75, 0.9, 1.0);
+        for (var i = 0; i < 4; i++) {
+          var legMesh = new THREE.Mesh(testEnemyGeom, strikerMaterial);
+          legMesh.scale.set(0.39, 0.67, 0.39);
+          enemyMesh.add(legMesh);
+          legMesh.position.set(Math.cos((i / 4 * Math.PI * 2) + (Math.PI * 0.25)), -0.25, Math.sin((i / 4 * Math.PI * 2) + (Math.PI * 0.25)));
+        }
+      } else {
+        var enemyMesh = new THREE.Mesh(testEnemyGeom, enemyMaterial);
+        enemyMesh.position.set(enemy.x * WorldScale, 0, enemy.y * WorldScale);
+        scene.add(enemyMesh);
+        enemy.data.mesh = enemyMesh;
+      }
 
       enemy.data.deathParticleMesh = [];
       for (var i = 0; i < 4; i++) {
-        var pMesh = new THREE.Mesh(testEnemyGeom, enemyMaterial);
+        var pMesh = new THREE.Mesh(testEnemyGeom, enemy.data.mesh.material);
         pMesh.scale.set(0.56, 0.56, 0.56);
         pMesh.visible = false;
         pMesh.matrixAutoUpdate = false;
