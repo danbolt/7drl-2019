@@ -98,6 +98,8 @@ LoadingScreen.prototype.preload = function() {
   });
 
   this.game.load.audio('bgm', 'asset/bgm/awoken_leg.mp3');
+
+  this.game.load.image('logo', 'asset/image/logo.png');
 };
 LoadingScreen.prototype.create = function() {
   clipsToLoad.forEach((clipName) => {
@@ -158,10 +160,71 @@ TitleScreen.prototype.create = function() {
   backing.height = this.game.height;
   backing.tint = 0;
 
-  var titleText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.25, 'font', 'title screen', 8);
+  var titleText = this.game.add.bitmapText(this.game.width * 0.5, this.game.height * 0.65, 'font', 'press spacebar to start', 8);
   titleText.align = 'center';
   titleText.anchor.set(0.5, 0.5);
   jibberize(titleText, this.game);
+
+  var infoText = this.game.add.bitmapText(0.0, this.game.height - 9, 'font', '(c) Daniel Savage 2019 #7drl', 8);
+  jibberize(infoText, this.game);
+
+
+  var logoFragmentSrc = `
+    precision mediump float;
+
+    varying vec2 vTextureCoord;
+
+    uniform sampler2D uSampler;
+    uniform vec2 resolution;
+    uniform float time;
+
+    void main(void) {
+
+      gl_FragColor = texture2D(uSampler, vTextureCoord);
+
+      float fidelity = (sin(time * 1.2) * 0.25 + 0.6) * 4.0;
+
+      vec2 p = vTextureCoord * resolution + vec2(0.5, 0.5);
+      vec2 pSlot = floor(p / fidelity) * fidelity;
+      vec2 fragColorPSlot = pSlot / resolution;
+
+      gl_FragColor = texture2D(uSampler, fragColorPSlot);
+
+      if (gl_FragColor.w < 0.97) {
+        gl_FragColor = vec4(gl_FragColor.xyz, 0.0);
+      }
+    }
+    `;
+  var logoFilter = new Phaser.Filter(this.game, null, logoFragmentSrc);
+
+  var logoImage = this.game.add.image(this.game.width * 0.5, this.game.height * 0.25, 'logo');
+  logoImage.anchor.set(0.5, 0.5);
+  logoImage.width = 240;
+  logoImage.scale.y = logoImage.scale.x;
+  logoImage.filters = [logoFilter];
+  logoImage.update = function () {
+    this.filters[0].update();
+  };
+  var t = this.game.add.tween(logoImage.scale);
+  t.to( { x: [logoImage.scale.x + 0.05, logoImage.scale.x], y: [logoImage.scale.y + 0.05, logoImage.scale.y] }, 2000, Phaser.Easing.Cubic.InOut, true, 0, -1);
+  t.interpolation(function (v, k) {
+
+        var m = v.length - 1;
+        var f = m * k;
+        var i = Math.floor(f);
+
+        var result = 0;
+
+        if (k < 0) {
+          result = this.linear(v[0], v[1], f);
+        } else if (k > 1) {
+          result = this.linear(v[m], v[m - 1], m - f);
+        } else {
+          result = this.linear(v[i], v[i + 1 > m ? m : i + 1], f - i);
+        }
+        return Math.floor(result * 75) / 75;
+
+    });
 
   this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR).onDown.add( function() {
     for (var i = 0; i < stageSeeds.length; i++) {
@@ -170,8 +233,5 @@ TitleScreen.prototype.create = function() {
     currentStageIndex = 0;
 
     this.game.state.start('CutSceneScreen', true, false, introLines, 'Gameplay');
-
-    // vvv for winning later
-    //this.game.state.start('CutSceneScreen', true, false, winLines, 'TitleScreen');
   }, this);
 };

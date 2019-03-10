@@ -46,7 +46,7 @@ var introLines = [
     line: '...it\'s like im talking to a child...'
   },
   {
-    line: 'ever heard of\nthe amulet of yendor?',
+    line: 'ever heard of\nthe amulet of nayr?',
     hideBacking: true
   },
   {
@@ -83,7 +83,7 @@ var winLines = [
     hideBacking: true
   },
   {
-    line: 'you actually got the amulet!!!',
+    line: 'you actually got\nthe amulet nayr!!!',
     shock: true,
     hideBacking: true
   },
@@ -100,7 +100,7 @@ var winLines = [
     hideBacking: true
   },
   {
-    line: 'anyway, well done'
+    line: 'anyway, well good job'
   },
   {
     line: 'you\'re free to go\n\ni\'ll probably, uh...'

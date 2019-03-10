@@ -507,11 +507,9 @@ Gameplay.prototype.update = function() {
 
     currentStageIndex++;
     if (currentStageIndex >= stageSeeds.length) {
-
-
       this.game.input.gamepad.onAxisCallback = ((gamepad) => { });
       this.game.input.gamepad.onDownCallback = ((buttonCode) => { });
-      
+
       this.game.state.start('CutSceneScreen', true, false, winLines, 'TitleScreen');
     } else {
       this.game.state.start('Gameplay');
@@ -524,7 +522,7 @@ Gameplay.prototype.update = function() {
 
   this.updateUI();
 
-  /*
+  
   this.game.physics.arcade.overlap(this.player, this.enemies, function (player, enemy) {
     if (player.data.state === PlayerState.STRIKE) {
       enemy.damage(player.data.powerValue)
@@ -532,7 +530,7 @@ Gameplay.prototype.update = function() {
       player.kill();
     }
   }, undefined, this);
-  */
+  
   this.game.physics.arcade.overlap(this.player, this.items, function(player, item) {
     if (player.data.state === PlayerState.NORMAL) {
       this.itemInfoText.visible = true;
