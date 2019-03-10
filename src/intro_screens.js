@@ -93,6 +93,8 @@ LoadingScreen.prototype.preload = function() {
   clipsToLoad.forEach((clipName) => {
     this.game.load.audio(clipName, 'asset/sfx/' + clipName + '.wav');
   });
+
+  this.game.load.audio('bgm', 'asset/bgm/awoken_leg.mp3');
 };
 LoadingScreen.prototype.create = function() {
   clipsToLoad.forEach((clipName) => {
@@ -135,6 +137,8 @@ SplashScreen.prototype.create = function() {
       t.onComplete.add(function () {
         sfx['enter'].play(undefined, undefined, 0.4);
         this.game.time.events.add(1500, function () {
+          var bgm = this.game.add.audio('bgm');
+          bgm.play(undefined, undefined, 0.3);
           this.game.state.start('TitleScreen');
         }, this);
       }, this);
